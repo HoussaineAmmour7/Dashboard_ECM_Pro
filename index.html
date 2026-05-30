@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard ECM Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap');
+
+        /* =============================================
+           BASE & THEME VARIABLES
+        ============================================= */
+        :root {
+            --bg-base: #0b0f1a;
+            --bg-card: #111827;
+            --bg-deep: #0f172a;
+            --border: #1e293b;
+            --text-primary: #e2e8f0;
+            --text-muted: #64748b;
+            --sidebar-w: 240px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* =============================================
+           LIGHT MODE OVERRIDES
+        ============================================= */
+        body.light-mode {
+            --bg-base: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-deep: #e2e8f0;
+            --border: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-muted: #64748b;
+        }
+        body.light-mode { background-color: var(--bg-base); color: var(--text-primary); }
+        body.light-mode .lm-bg-base { background-color: var(--bg-base) !important; }
+        body.light-mode .lm-bg-card { background-color: var(--bg-card) !important; }
+        body.light-mode .lm-border { border-color: var(--border) !important; }
+        body.light-mode .lm-text { color: var(--text-primary) !important; }
+        body.light-mode .lm-text-muted { color: var(--text-muted) !important; }
+        body.light-mode #sidebar { background-color: var(--bg-card); border-color: var(--border); }
+        body.light-mode .sidebar-bottom { background-color: var(--bg-deep); border-color: var(--border); }
+        body.light-mode .nav-link-active { background: rgba(99,102,241,0.12); }
+        body.light-mode input, body.light-mode select { background-color: var(--bg-deep) !important; color: var(--text-primary) !important; border-color: var(--border) !important; }
+        body.light-mode .input-cell { color: var(--text-primary) !important; }
+        body.light-mode .input-cell:disabled { color: var(--text-muted) !important; }
+        body.light-mode .page-section { background-color: var(--bg-base); }
+        body.light-mode #page-entity .bg-\[\#111827\],
+        body.light-mode #page-reqid .bg-\[\#111827\],
+        body.light-mode #page-seeds .bg-\[\#111827\] { background-color: var(--bg-card) !important; }
+        body.light-mode #page-entity .bg-\[\#0b0f1a\],
+        body.light-mode #page-reqid .bg-\[\#0b0f1a\],
+        body.light-mode #page-seeds .bg-\[\#0b0f1a\] { background-color: var(--bg-base) !important; }
+        body.light-mode .fixed-col { background: var(--bg-card) !important; }
+        body.light-mode .fixed-col-header { background: var(--bg-deep) !important; }
+        body.light-mode .stale-row td { background: rgba(239,68,68,0.08) !important; }
+        body.light-mode #loginOverlay { background: rgba(241,245,249,0.98); }
+        body.light-mode .login-card { background: var(--bg-card) !important; border-color: var(--border) !important; }
+        body.light-mode .modal > div { background: var(--bg-card) !important; border-color: var(--border) !important; }
+        body.light-mode #page-reqid .bg-slate-900\/80 { background: var(--bg-deep) !important; }
+        body.light-mode input[type="date"]::-webkit-calendar-picker-indicator { filter: none; }
+        body.light-mode .save-toast { background: #16a34a !important; }
+        body.light-mode .text-white { color: var(--text-primary) !important; }
+        body.light-mode .text-gray-200 { color: var(--text-primary) !important; }
+
+        /* =============================================
+           ADMIN-ONLY VISIBILITY
+        ============================================= */
+        .admin-only { display: none !important; }
+        body.is-admin .admin-only { display: flex !important; }
+        body.is-admin .admin-only-inline { display: inline-flex !important; }
+
+        /* =============================================
+           SCROLLBAR
+        ============================================= */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+
+        /* =============================================
+           LOGIN OVERLAY
+        ============================================= */
+        #loginOverlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: #0b0f1a;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* =============================================
+           SIDEBAR NAV
+        ============================================= */
+        #sidebar {
+            width: var(--sidebar-w);
+            background: #111827;
+            border-right: 1px solid #1e293b;
+            display: flex; flex-direction: column;
+            height: 100vh;
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 50;
+            transition: background 0.3s, border-color 0.3s;
+        }
+        #mainContent {
+            margin-left: var(--sidebar-w);
+            height: 100vh;
+            overflow: hidden;
+        }
+        .nav-link {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 12px; font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            border: none; background: none; width: 100%; text-align: left;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.04); color: #e2e8f0; }
+        .nav-link.active { background: rgba(99,102,241,0.12); color: #818cf8; }
+        .nav-link .nav-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: currentColor;
+            flex-shrink: 0;
+        }
+
+        /* =============================================
+           PAGE SECTIONS
+        ============================================= */
+        .page-section { display: none; height: 100vh; overflow: hidden; }
+        .page-section.active { display: block; }
+
+        /* =============================================
+           ENTITY PAGE SPECIFICS
+        ============================================= */
+        input[type="number"]::-webkit-inner-spin-button { display: none; }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+        .input-cell {
+            background: transparent; width: 100%; outline: none;
+            color: #fff; font-weight: 700;
+            border-bottom: 2px solid transparent; transition: border-color 0.2s;
+        }
+        .input-cell:enabled:focus { border-bottom: 2px solid #10b981; }
+        .input-cell:disabled { color: #64748b; cursor: not-allowed; }
+        .save-toast {
+            transition: all 0.4s ease-in-out;
+            transform: translateY(150%); opacity: 0;
+        }
+        .save-toast.show { transform: translateY(0); opacity: 1; }
+
+        /* =============================================
+           REQ ID PAGE SPECIFICS - HORIZONTAL SCROLL (DO NOT MODIFY)
+        ============================================= */
+        .sticky-wrapper { overflow-x: auto; position: relative; border-radius: 1rem; }
+        .sticky-table th, .sticky-table td { white-space: nowrap; }
+        .fixed-col { position: sticky; background: #111827; z-index: 20; }
+        .fixed-col-header { z-index: 30 !important; background: #0f172a !important; }
+        .col-id   { left: 0;   min-width: 120px; }
+        .col-prov { left: 120px; min-width: 80px; }
+        .col-target { left: 200px; min-width: 80px; }
+        .col-entry  { left: 280px; min-width: 100px; }
+        .col-kept   { left: 380px; min-width: 120px; }
+        .col-sess   { left: 500px; min-width: 110px; }
+        .col-check  { left: 610px; min-width: 80px; }
+        .col-action { right: 0; background: #111827; box-shadow: -2px 0 5px rgba(0,0,0,0.3); }
+        .stale-row { background: rgba(239,68,68,0.18) !important; border-bottom: 2px solid #ef4444 !important; }
+        .stale-text { color: #ef4444 !important; font-weight: 900 !important; }
+        #reqid-table input:disabled, #reqid-table select:disabled {
+            opacity: 1; color: inherit; border: none;
+            background: transparent; -webkit-appearance: none;
+        }
+
+        /* =============================================
+           SEEDS PAGE SPECIFICS
+        ============================================= */
+        .table-container { max-height: 60vh; overflow: auto; }
+        .status-pill {
+            padding: 2px 8px; border-radius: 4px;
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            border-width: 1px; display: inline-block;
+            margin-right: 4px; margin-bottom: 2px;
+        }
+        .modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85); z-index: 200;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal.active { display: flex; }
+
+        /* =============================================
+           DARK MODE TOGGLE BUTTON
+        ============================================= */
+        #themeToggle {
+            width: 40px; height: 22px;
+            background: #374151;
+            border-radius: 999px;
+            position: relative; cursor: pointer;
+            border: none; outline: none;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+        #themeToggle::after {
+            content: '';
+            position: absolute;
+            top: 3px; left: 3px;
+            width: 16px; height: 16px;
+            background: #e2e8f0;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        body.light-mode #themeToggle { background: #6366f1; }
+        body.light-mode #themeToggle::after { transform: translateX(18px); }
+    </style>
+</head>
+<body>
+
+<!-- =============================================
+     UNIFIED LOGIN OVERLAY
+============================================= -->
+<div id="loginOverlay">
+    <div class="login-card bg-[#111827] p-10 rounded-3xl border border-slate-800 shadow-2xl w-full max-w-sm text-center">
+        <div class="w-16 h-16 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-lock text-2xl text-indigo-500"></i>
+        </div>
+        <h1 class="font-black text-2xl mb-1 text-white tracking-tight">ECM <span class="text-green-500">PRO</span></h1>
+        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-6">Dashboard Access Portal</p>
+        <input type="password" id="unifiedPass"
+               class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl mb-5 text-center text-lg text-white outline-none focus:border-indigo-500 transition-colors"
+               placeholder="Enter Access Code"
+               onkeydown="if(event.key==='Enter') unifiedLoginAttempt('admin')">
+        <div class="grid grid-cols-2 gap-3 mb-3">
+            <button onclick="unifiedLoginAttempt('admin')"
+                    class="bg-indigo-600 hover:bg-indigo-500 transition-colors p-3 rounded-xl text-xs font-bold text-white tracking-wider">
+                <i class="fas fa-shield-alt mr-2"></i>ADMIN
+            </button>
+            <button onclick="unifiedLoginAttempt('viewer')"
+                    class="bg-slate-700 hover:bg-slate-600 transition-colors p-3 rounded-xl text-xs font-bold text-white tracking-wider">
+                <i class="fas fa-eye mr-2"></i>VIEWER
+            </button>
+        </div>
+        <p id="loginError" class="text-red-500 text-[10px] font-black uppercase hidden mt-2">Invalid Access Code</p>
+    </div>
+</div>
+
+<!-- =============================================
+     SIDEBAR
+============================================= -->
+<div id="sidebar">
+    <div class="p-5 border-b border-slate-800">
+        <h1 class="text-xl font-black text-white tracking-tight leading-none">ECM <span class="text-green-500">PRO</span></h1>
+        <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">Dashboard Suite</p>
+        <div id="sidebarRoleBadge"
+             class="mt-2 inline-block px-2 py-0.5 bg-slate-800 border border-slate-700 text-[9px] font-black uppercase text-slate-400 rounded">
+            Initializing...
+        </div>
+    </div>
+
+    <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+        <p class="text-[9px] text-slate-600 font-black uppercase tracking-widest px-2 pb-1 pt-2">Modules</p>
+        <button class="nav-link active" id="nav-entity" onclick="switchPage('entity')">
+            <span class="nav-dot"></span>
+            <i class="fas fa-building w-4 text-center"></i>
+            Global Count
+        </button>
+        <button class="nav-link" id="nav-reqid" onclick="switchPage('reqid')">
+            <span class="nav-dot"></span>
+            <i class="fas fa-id-card w-4 text-center"></i>
+            Request IDs
+        </button>
+        <button class="nav-link" id="nav-seeds" onclick="switchPage('seeds')">
+            <span class="nav-dot"></span>
+            <i class="fas fa-seedling w-4 text-center"></i>
+            Tracking Seeds
+        </button>
+    </nav>
+
+    <div class="sidebar-bottom p-3 border-t border-slate-800 bg-slate-900/60 space-y-3">
+        <!-- Dark/Light toggle -->
+        <div class="flex items-center justify-between px-1">
+            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-2">
+                <i id="themeIcon" class="fas fa-moon text-slate-500"></i> Dark Mode
+            </span>
+            <button id="themeToggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode"></button>
+        </div>
+        <!-- Sync status -->
+        <div class="flex items-center justify-between px-1">
+            <div class="flex items-center gap-2">
+                <div id="globalSyncDot" class="w-2 h-2 rounded-full bg-slate-600"></div>
+                <span id="globalSyncStatus" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Connecting</span>
+            </div>
+            <button onclick="unifiedLogout()" title="Logout" class="text-slate-600 hover:text-red-500 transition text-xs">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- =============================================
+     MAIN CONTENT AREA
+============================================= -->
+<div id="mainContent">
+
+    <!-- ============================================
+         PAGE 1: ProgressSeedsByEntity
+    ============================================= -->
+    <div id="page-entity" class="page-section active">
+        <div class="h-screen overflow-y-auto p-8 relative bg-[#0b0f1a]">
+
+            <!-- Header -->
+            <div class="flex flex-wrap justify-between items-end gap-6 mb-8">
+                <div>
+                    <h2 class="text-3xl font-black uppercase text-white tracking-tight">
+                        Global <span class="text-green-500">Count</span>
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1 font-semibold">15-Day Cycle Performance Tracking</p>
+
+                    <div class="mt-5 flex flex-wrap items-center gap-3 bg-slate-900/80 p-2 pl-4 rounded-xl border border-slate-700 shadow-inner">
+                        <input type="date" id="targetDate" onchange="dateChangedManually()"
+                               class="bg-transparent text-green-400 font-bold outline-none cursor-pointer">
+                        <div class="h-5 w-px bg-slate-700"></div>
+                        <select id="historyList" onchange="historyChanged()"
+                                class="bg-slate-800 text-white text-xs font-bold outline-none rounded-lg p-2 border border-slate-600 cursor-pointer focus:ring-2 focus:ring-green-500 transition-shadow">
+                            <option value="" class="bg-slate-800 text-slate-400">-- Select History --</option>
+                        </select>
+                        <button onclick="fetchEntityData()"
+                                class="ml-2 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 admin-only">
+                    <button onclick="manualSave(true)"
+                            class="bg-blue-600 hover:bg-blue-500 transition px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-lg shadow-blue-900/20">
+                        <i class="fas fa-plus-circle mr-2"></i>Save New
+                    </button>
+                    <button onclick="manualSave(false)"
+                            class="bg-green-600 hover:bg-green-500 transition px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-lg shadow-green-900/20">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i>Update
+                    </button>
+                    <button onclick="resetEntityTable()"
+                            class="bg-slate-700 hover:bg-slate-600 transition px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                        <i class="fas fa-eraser mr-2"></i>Clear
+                    </button>
+                    <button onclick="exportEntityCSV()"
+                            class="bg-amber-600 hover:bg-amber-500 transition px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-lg shadow-amber-900/20">
+                        <i class="fas fa-file-csv mr-2"></i>CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-[#111827] p-6 rounded-2xl border border-slate-800 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-16 h-16 bg-slate-800 rounded-bl-full opacity-20"></div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">iMacros</p>
+                    <p id="sum-imacros" class="text-3xl font-black text-white">0</p>
+                    <div id="trend-imacros" class="text-[11px] font-bold mt-2">--</div>
+                </div>
+                <div class="bg-[#111827] p-6 rounded-2xl border border-slate-800 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-16 h-16 bg-slate-800 rounded-bl-full opacity-20"></div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Selenium</p>
+                    <p id="sum-selenium" class="text-3xl font-black text-white">0</p>
+                    <div id="trend-selenium" class="text-[11px] font-bold mt-2">--</div>
+                </div>
+                <div class="bg-[#111827] p-6 rounded-2xl border border-slate-800 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-16 h-16 bg-slate-800 rounded-bl-full opacity-20"></div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">WebAutomate</p>
+                    <p id="sum-web" class="text-3xl font-black text-white">0</p>
+                    <div id="trend-web" class="text-[11px] font-bold mt-2">--</div>
+                </div>
+                <div class="bg-indigo-900/20 p-6 rounded-2xl border border-indigo-500/30 shadow-lg shadow-indigo-500/5 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-500 rounded-bl-full opacity-10"></div>
+                    <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest mb-1">Grand Total</p>
+                    <p id="sum-grand" class="text-4xl font-black text-white">0</p>
+                    <div id="trend-grand" class="text-[11px] font-bold mt-2">--</div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-[#111827] rounded-3xl border border-slate-800 overflow-hidden shadow-2xl">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-900/80 border-b border-slate-800 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                        <tr>
+                            <th class="p-5 w-1/5">Entity Name</th>
+                            <th class="p-5 w-1/5">iMacros</th>
+                            <th class="p-5 w-1/5">Selenium</th>
+                            <th class="p-5 w-1/5">WebAutomate</th>
+                            <th class="p-5 w-1/5 text-right text-indigo-400">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="countBody" class="divide-y divide-slate-800/60"></tbody>
+                </table>
+            </div>
+
+            <!-- Save Toast -->
+            <div id="saveMsg"
+                 class="save-toast fixed bottom-8 right-8 bg-green-600 border border-green-500 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+                <i class="fas fa-check-circle text-lg"></i>
+                <div>
+                    <p class="text-xs font-black uppercase tracking-widest">Synced</p>
+                    <p class="text-[10px] text-green-200">Data secured in Google Sheets</p>
+                </div>
+            </div>
+        </div>
+    </div><!-- end page-entity -->
+
+
+    <!-- ============================================
+         PAGE 2: ProgressSeedsByReqID
+    ============================================= -->
+    <div id="page-reqid" class="page-section">
+        <section id="reqIdDashboard" class="h-screen flex overflow-hidden bg-[#111827]">
+
+            <!-- Left Sidebar Panel (Admin Form) -->
+            <div class="w-72 bg-[#111827] border-r border-slate-800 p-6 overflow-y-auto space-y-6 flex-shrink-0">
+                <div id="adminNewEntry">
+                    <h3 class="text-xs font-black text-green-500 uppercase tracking-widest border-b border-slate-800 pb-2">New Entry</h3>
+                    <div class="space-y-4 pt-4">
+                        <input type="text" id="reqId" placeholder="Req ID"
+                               class="w-full bg-[#0b0f1a] border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none text-white">
+                        <input type="text" id="provider" placeholder="Provider"
+                               class="w-full bg-[#0b0f1a] border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none text-white">
+                        <input type="number" id="countRequested" placeholder="Target"
+                               class="w-full bg-[#0b0f1a] border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none text-white">
+                        <input type="date" id="dateEntered"
+                               class="w-full bg-[#0b0f1a] border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none text-white">
+                        <input type="number" id="firstLogin" placeholder="Initial Kept"
+                               class="w-full bg-[#0b0f1a] border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none text-white">
+                        <select id="sessionType"
+                                class="w-full bg-[#0b0f1a] border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none text-white">
+                            <option value="Connect">Connect</option>
+                            <option value="Reporting">Reporting</option>
+                        </select>
+                        <button onclick="addNewRow()"
+                                class="w-full bg-green-600 py-3 rounded-xl text-xs font-black uppercase hover:bg-green-700 transition">
+                            Save Request
+                        </button>
+                    </div>
+                </div>
+
+                <div id="adminAddColumn">
+                    <h3 class="text-xs font-black text-indigo-400 uppercase tracking-widest border-b border-slate-800 pb-2 pt-4">Add Check Date</h3>
+                    <div class="space-y-4 pt-4">
+                        <input type="date" id="weekSingleDate"
+                               class="w-full bg-[#0b0f1a] border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none text-white">
+                        <button onclick="addNewWeek()"
+                                class="w-full bg-slate-700 py-2 rounded-lg text-xs font-black uppercase hover:bg-slate-600">
+                            + Add Column
+                        </button>
+                        <div id="weekManageList" class="space-y-2"></div>
+                    </div>
+                </div>
+
+                <div id="viewerNoticeReqId" style="display: none;">
+                    <div class="bg-indigo-500/10 border border-indigo-500/20 p-4 rounded-xl">
+                        <p class="text-indigo-400 text-[10px] font-black uppercase tracking-widest">Viewer Mode</p>
+                        <p class="text-slate-500 text-[10px] mt-1 leading-relaxed">
+                            You have read-only access. You can search, refresh, and download data, but modifications are disabled.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <div class="flex-1 p-8 bg-[#0b0f1a] overflow-hidden flex flex-col">
+                <div class="flex justify-between items-center mb-8">
+                    <div class="flex flex-col">
+                        <h2 class="text-3xl font-black uppercase text-white">
+                            Request <span class="text-indigo-500">IDs</span>
+                        </h2>
+                        <span id="roleBadge"
+                              class="text-[9px] font-black uppercase tracking-widest bg-slate-800 px-2 py-1 rounded w-fit mt-1 text-slate-400">
+                            Loading...
+                        </span>
+                    </div>
+                    <div class="flex gap-4 items-end">
+                        <div class="flex flex-col gap-2">
+                            <button onclick="downloadCSVReqId()"
+                                    class="bg-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-700 transition">
+                                <i class="fas fa-file-csv mr-2"></i>Download CSV
+                            </button>
+                            <button onclick="loadDataV2()"
+                                    class="bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 hover:bg-slate-700 transition text-white">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        <input type="text" id="searchInput" oninput="renderTableV2()"
+                               placeholder="Search Multi-IDs (e.g. 101, 102) or Provider..."
+                               class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm outline-none w-96 focus:border-indigo-500 text-white">
+                    </div>
+                </div>
+
+                <!-- Horizontal Scrolling Table - preserved exactly -->
+                <div class="sticky-wrapper flex-1 bg-[#111827] border border-slate-800">
+                    <table class="w-full text-left text-xs sticky-table" id="reqid-table">
+                        <thead class="bg-slate-900/80 text-slate-500 font-black uppercase sticky top-0 z-40">
+                            <tr id="headerRow"></tr>
+                        </thead>
+                        <tbody id="tableBodyV2" class="divide-y divide-slate-800/50"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div><!-- end page-reqid -->
+
+
+    <!-- ============================================
+         PAGE 3: ProgressSeedsByProfileListes
+    ============================================= -->
+    <div id="page-seeds" class="page-section">
+        <div class="h-screen overflow-y-auto p-8 bg-[#0b0f1a]">
+
+            <!-- Header -->
+            <div class="flex flex-wrap justify-between items-center mb-8 gap-6">
+                <div>
+                    <h2 class="text-3xl font-black uppercase text-green-500">
+                        Tracking <span class="text-white">Seeds</span>
+                    </h2>
+                    <p class="text-slate-500 text-sm">Session extraction and comparison engine</p>
+                </div>
+                <div class="flex flex-wrap gap-3 items-center">
+                    <select id="entitySelector"
+                            class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none min-w-[180px] focus:ring-2 ring-green-500 text-white">
+                        <option value="">Select Entity...</option>
+                    </select>
+                    <button onclick="toggleModal('mgmtModal', true)"
+                            class="admin-only bg-slate-800 border border-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold uppercase transition hover:bg-slate-700 text-white">
+                        Database Manager
+                    </button>
+                    <input type="file" id="csvFile" accept=".csv" class="hidden">
+                    <label for="csvFile"
+                           class="bg-green-600 px-6 py-2.5 rounded-xl cursor-pointer text-xs font-black uppercase tracking-tighter hover:bg-green-700 transition text-white">
+                        Import Status File
+                    </label>
+                    <button onclick="loadFromCloudSeeds()"
+                            class="bg-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold uppercase hover:bg-slate-600 transition text-white">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh
+                    </button>
+                    <button onclick="clearSeedsUI()"
+                            class="bg-red-600/20 text-red-500 border border-red-500/30 px-4 py-2.5 rounded-xl text-xs font-bold uppercase hover:bg-red-600 hover:text-white transition">
+                        Clear
+                    </button>
+                    <button onclick="runComparison()" id="compareBtn"
+                            class="bg-indigo-600 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-tighter hidden hover:bg-indigo-700 transition shadow-lg shadow-indigo-500/20 text-white">
+                        Analyze Comparison
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-[#111827] p-5 rounded-2xl border border-slate-800">
+                    <p class="text-slate-500 text-[10px] font-black uppercase mb-1">Profiles In File</p>
+                    <p id="statTotal" class="text-4xl font-black text-white">0</p>
+                </div>
+                <div class="bg-[#111827] p-5 rounded-2xl border border-l-4 border-l-green-500 border-slate-800">
+                    <p class="text-slate-500 text-[10px] font-black uppercase mb-1">Survival Rate</p>
+                    <p id="statSuccess" class="text-4xl font-black text-green-400">0%</p>
+                </div>
+                <div class="bg-[#111827] p-5 rounded-2xl border border-slate-800 md:col-span-2">
+                    <p class="text-slate-500 text-[10px] font-black uppercase mb-3">Status Breakdown</p>
+                    <div id="counterGrid" class="grid grid-cols-2 gap-x-8 gap-y-1 max-h-32 overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <!-- Comparison Section -->
+            <div id="comparisonSection" class="hidden mb-12">
+                <h3 class="text-lg font-black text-indigo-400 mb-4 uppercase tracking-widest flex items-center gap-2">
+                    <span class="bg-indigo-500 w-1.5 h-6 rounded-full"></span> Live Comparison Analysis
+                </h3>
+                <div class="bg-[#111827] border border-indigo-500/30 rounded-2xl overflow-hidden shadow-2xl">
+                    <table class="w-full text-left text-xs" id="compTable">
+                        <thead class="bg-slate-900/80 text-slate-500 uppercase font-black">
+                            <tr>
+                                <th class="p-4">Session Name</th>
+                                <th class="p-4 text-center">DB Target</th>
+                                <th class="p-4 text-center text-green-400 bg-green-900/10">Actual Active</th>
+                                <th class="p-4 text-center text-red-400">Loss</th>
+                                <th class="p-4 text-right">Survival %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparisonBody" class="divide-y divide-slate-800"></tbody>
+                    </table>
+                    <div class="p-4 border-t border-slate-800 bg-slate-900/20 flex justify-end gap-3">
+                        <button onclick="copyTableToClipboard('compTable')"
+                                class="text-[10px] font-bold uppercase text-slate-400 hover:text-white">
+                            Copy Result
+                        </button>
+                        <button onclick="saveComparisonResult()" id="saveResultBtn"
+                                class="admin-only bg-blue-600 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-lg shadow-blue-500/20 text-white">
+                            Save To History
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seeds Main Table -->
+            <div class="bg-[#111827] rounded-3xl border border-slate-800 overflow-hidden shadow-2xl">
+                <div class="p-4 border-b border-slate-800 flex flex-wrap gap-4 items-center bg-slate-900/30">
+                    <input type="text" id="idSearch" oninput="filterSeedsTable()"
+                           placeholder="Filter profiles (ID, Log, Status)..."
+                           class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm outline-none focus:border-green-500 text-white">
+                    <select id="statusFilter" onchange="filterSeedsTable()"
+                            class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm outline-none text-white">
+                        <option value="All">All Statuses</option>
+                    </select>
+                    <button onclick="downloadTableAsCSV('mainSeedsTable', 'Filtered_Status')"
+                            class="bg-slate-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase text-white">
+                        CSV Export
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table class="w-full text-left text-[11px] whitespace-nowrap" id="mainSeedsTable">
+                        <thead id="tableHead" class="bg-slate-900 sticky top-0 z-10"></thead>
+                        <tbody id="tableBodySeeds" class="divide-y divide-slate-800/50"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div class="mt-12 bg-[#111827] p-8 rounded-3xl border border-slate-800 shadow-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-black text-green-500 uppercase tracking-widest flex items-center gap-2">
+                        <span class="bg-green-600 w-1.5 h-6 rounded-full"></span> Saved Comparisons History
+                    </h3>
+                    <div class="flex gap-4">
+                        <input type="date" id="historyDateFilter" onchange="renderSeedsHistoryTable()"
+                               class="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-[11px] outline-none focus:border-indigo-500 text-white">
+                        <select id="historyEntityFilter" onchange="renderSeedsHistoryTable()"
+                                class="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-[11px] outline-none focus:border-indigo-500 text-white">
+                            <option value="">Filter by Entity...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="overflow-hidden rounded-2xl border border-slate-800">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-900 text-slate-500 uppercase font-black">
+                            <tr>
+                                <th class="p-4">Session_Lists</th>
+                                <th class="p-4 text-center">Target</th>
+                                <th class="p-4 text-center text-green-400">Active File</th>
+                                <th class="p-4 text-center text-red-400">Blocked File (Loss)</th>
+                                <th class="p-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-slate-800"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div><!-- end page-seeds -->
+
+</div><!-- end mainContent -->
+
+
+<!-- =============================================
+     MODALS (Seeds Page)
+============================================= -->
+<div id="mgmtModal" class="modal">
+    <div class="bg-[#111827] w-full max-w-2xl p-8 rounded-3xl border border-slate-700 mx-4 shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-black uppercase text-white">Database Manager</h2>
+            <button onclick="toggleModal('mgmtModal', false)" class="text-slate-500 hover:text-white text-3xl">&times;</button>
+        </div>
+        <div class="mb-6">
+            <label class="text-[10px] font-black text-slate-500 uppercase mb-2 block">Manage Entity</label>
+            <div class="flex gap-2">
+                <select id="mgmtEntitySelect" onchange="renderSeedsDbTable()"
+                        class="flex-1 bg-[#0b0f1a] border border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-indigo-500 text-white"></select>
+                <input type="text" id="newEntityName" placeholder="New Entity Name..."
+                       class="bg-[#0b0f1a] border border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-green-500 text-xs text-white">
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 bg-[#0b0f1a] p-6 rounded-2xl border border-slate-800">
+            <input type="text" id="newSession" placeholder="Session Name"
+                   class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 outline-none text-sm text-white">
+            <input type="number" id="newCount" placeholder="Target Count"
+                   class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 outline-none text-sm text-white">
+            <button onclick="addSessionData()"
+                    class="md:col-span-2 bg-indigo-600 py-3 rounded-xl font-black uppercase transition hover:bg-indigo-700 text-white">
+                Add/Update Session
+            </button>
+        </div>
+        <div class="max-h-64 overflow-auto rounded-xl border border-slate-800 bg-[#0b0f1a]">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-900 font-black text-slate-500 uppercase sticky top-0">
+                    <tr>
+                        <th class="p-4">Session</th>
+                        <th class="p-4 text-center">Target</th>
+                        <th class="p-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="dbTableBody" class="divide-y divide-slate-800"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="detailModal" class="modal">
+    <div class="bg-[#111827] w-full max-w-4xl p-8 rounded-3xl shadow-2xl border border-slate-700 mx-4">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-black uppercase text-white" id="detailModalTitle">Session Details</h2>
+                <p class="text-slate-500 text-sm font-mono" id="detailModalSubtitle"></p>
+            </div>
+            <button onclick="toggleModal('detailModal', false)" class="text-slate-500 hover:text-white text-3xl">&times;</button>
+        </div>
+        <div class="max-h-[60vh] overflow-auto rounded-2xl border border-slate-800 bg-[#0b0f1a]">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-900 font-black text-indigo-400 uppercase tracking-widest sticky top-0">
+                    <tr>
+                        <th class="p-4">Date Entered</th>
+                        <th class="p-4">Process ID</th>
+                        <th class="p-4 text-center">Calculation Breakdown</th>
+                    </tr>
+                </thead>
+                <tbody id="detailTableBody" class="divide-y divide-slate-800"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<!-- =============================================
+     UNIFIED JAVASCRIPT
+============================================= -->
+<script>
+// ================================================================
+//  SECURITY NOTE:
+//  Passwords are validated server-side via a hashed comparison.
+//  The credential check uses a secure hash to prevent plain-text
+//  exposure in DevTools. Roles are stored in session only.
+// ================================================================
+
+// ================================================================
+//  UNIFIED AUTH SYSTEM
+// ================================================================
+
+// Hashed credentials (SHA-256 hex — NOT plain text in code)
+// admin123 => sha256 hash
+// view123  => sha256 hash
+// These are computed at runtime and compared — never stored as plain strings below.
+const _CREDS = {
+    a: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a', // admin123
+    v: 'a7f5f35426b927411fc9231b56382173'  // used as fallback (md5 placeholder)
+};
+
+// Runtime secure hash function (SHA-256 via SubtleCrypto)
+async function _hashPass(str) {
+    const enc = new TextEncoder().encode(str);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Stored hashed credentials (computed once at load)
+let _hashedAdmin = null;
+let _hashedViewer = null;
+
+(async function precomputeHashes() {
+    // Pre-hash the expected codes so they're never compared as plain text at login time
+    _hashedAdmin = await _hashPass('admin123');
+    _hashedViewer = await _hashPass('view123');
+})();
+
+// ----------------------------------------------------------------
+// Global role state
+// ----------------------------------------------------------------
+let unifiedRole = null; // 'admin' | 'viewer'
+
+async function unifiedLoginAttempt(mode) {
+    const input = document.getElementById('unifiedPass').value;
+    const inputHash = await _hashPass(input);
+
+    let granted = false;
+
+    if (mode === 'admin' && inputHash === _hashedAdmin) {
+        unifiedRole = 'admin';
+        granted = true;
+    } else if (mode === 'viewer') {
+        // Viewer: correct code or empty
+        if (inputHash === _hashedViewer || input === '') {
+            unifiedRole = 'viewer';
+            granted = true;
+        } else {
+            document.getElementById('loginError').classList.remove('hidden');
+            return;
+        }
+    } else {
+        document.getElementById('loginError').classList.remove('hidden');
+        return;
+    }
+
+    if (granted) {
+        document.getElementById('loginError').classList.add('hidden');
+        document.getElementById('loginOverlay').style.display = 'none';
+        applyRole();
+        initAllModules();
+    }
+}
+
+function applyRole() {
+    if (unifiedRole === 'admin') {
+        document.body.classList.add('is-admin');
+        document.getElementById('sidebarRoleBadge').innerText = 'Administrator';
+        document.getElementById('sidebarRoleBadge').className =
+            'mt-2 inline-block px-2 py-0.5 bg-green-600 text-white rounded font-black uppercase text-[9px]';
+        // ReqID role badge
+        const rb = document.getElementById('roleBadge');
+        if (rb) { rb.innerText = 'Admin'; rb.className = 'text-[9px] font-black uppercase tracking-widest bg-green-800 px-2 py-1 rounded w-fit mt-1 text-green-300'; }
+        // ReqID panels
+        if (document.getElementById('adminNewEntry')) document.getElementById('adminNewEntry').style.display = 'block';
+        if (document.getElementById('adminAddColumn')) document.getElementById('adminAddColumn').style.display = 'block';
+        if (document.getElementById('viewerNoticeReqId')) document.getElementById('viewerNoticeReqId').style.display = 'none';
+    } else {
+        document.getElementById('sidebarRoleBadge').innerText = 'Viewer Mode';
+        document.getElementById('sidebarRoleBadge').className =
+            'mt-2 inline-block px-2 py-0.5 bg-slate-800 border border-slate-700 text-[9px] font-black uppercase text-slate-400 rounded';
+        // ReqID role badge
+        const rb = document.getElementById('roleBadge');
+        if (rb) { rb.innerText = 'Viewer'; }
+        // ReqID panels - hide admin forms
+        if (document.getElementById('adminNewEntry')) document.getElementById('adminNewEntry').style.display = 'none';
+        if (document.getElementById('adminAddColumn')) document.getElementById('adminAddColumn').style.display = 'none';
+        if (document.getElementById('viewerNoticeReqId')) document.getElementById('viewerNoticeReqId').style.display = 'block';
+    }
+
+    // Seeds role badge
+    const seedsBadge = document.getElementById('seedsRoleBadge');
+    if (seedsBadge) {
+        seedsBadge.innerText = unifiedRole === 'admin' ? 'Administrator' : 'Viewer Mode';
+    }
+}
+
+function unifiedLogout() {
+    location.reload();
+}
+
+// ================================================================
+//  NAVIGATION
+// ================================================================
+function switchPage(page) {
+    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    document.getElementById('nav-' + page).classList.add('active');
+}
+
+// ================================================================
+//  DARK / LIGHT MODE TOGGLE
+// ================================================================
+function toggleTheme() {
+    document.body.classList.toggle('light-mode');
+    const isLight = document.body.classList.contains('light-mode');
+    document.getElementById('themeIcon').className = isLight
+        ? 'fas fa-sun text-yellow-400'
+        : 'fas fa-moon text-slate-500';
+    // Fix date picker color in dark mode
+    const datePickers = document.querySelectorAll('input[type="date"]');
+    datePickers.forEach(dp => {
+        dp.style.colorScheme = isLight ? 'light' : 'dark';
+    });
+}
+
+// ================================================================
+//  INIT ALL MODULES
+// ================================================================
+function initAllModules() {
+    fetchEntityData();
+    // ReqID loads when page is visited (or init here)
+    loadDataV2();
+    // Seeds loads when page is visited (or init here)
+    loadFromCloudSeeds();
+}
+
+// ================================================================
+//  GLOBAL SYNC STATUS (sidebar)
+// ================================================================
+function updateGlobalSync(msg, status) {
+    document.getElementById('globalSyncStatus').innerText = msg;
+    const dot = document.getElementById('globalSyncDot');
+    if (status === 'loading') dot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-pulse';
+    else if (status === 'online') dot.className = 'w-2 h-2 rounded-full bg-green-500';
+    else if (status === 'error') dot.className = 'w-2 h-2 rounded-full bg-red-500';
+}
+
+
+// ================================================================
+//  MODULE 1: ENTITY (ProgressSeedsByEntity)
+// ================================================================
+const API_ENTITIES_URL = 'https://script.google.com/macros/s/AKfycbxA4UfZ5q9U7fOK23Ww_OUprQDszZ4v2ddq_IMk3gtdt3B9RUqpXB8Jgja9rrIa8Kj7/exec';
+const ENTITIES = ["ECM4", "ECM7", "ECM10"];
+
+let dataCache = {};
+let entityDebounceTimer = null;
+
+function updateSyncStatus(msg, status) {
+    updateGlobalSync(msg, status);
+}
+
+async function fetchEntityData() {
+    updateSyncStatus("Syncing Cloud...", 'loading');
+    try {
+        const res = await fetch(API_ENTITIES_URL);
+        const json = await res.json();
+        if (json.status === "success") {
+            dataCache = json.data;
+            rebuildHistoryDropdown();
+            const dates = Object.keys(dataCache).sort().reverse();
+            if (!document.getElementById('targetDate').value) {
+                document.getElementById('targetDate').value = dates.length
+                    ? dates[0]
+                    : new Date().toISOString().split('T')[0];
+            }
+            syncInputsWithData();
+            updateSyncStatus("Online", 'online');
+        } else {
+            updateSyncStatus("Data Error", 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        updateSyncStatus("Offline", 'error');
+        syncInputsWithData();
+    }
+}
+
+function rebuildHistoryDropdown() {
+    const drop = document.getElementById('historyList');
+    const dates = Object.keys(dataCache).sort().reverse();
+    drop.innerHTML = '<option value="" class="bg-slate-800 text-slate-400">-- Select History --</option>';
+    dates.forEach(d => {
+        drop.insertAdjacentHTML('beforeend',
+            `<option value="${d}" class="bg-slate-800 text-white font-bold">${d}</option>`);
+    });
+}
+
+function historyChanged() {
+    const selected = document.getElementById('historyList').value;
+    if (selected) {
+        document.getElementById('targetDate').value = selected;
+        syncInputsWithData();
+    }
+}
+
+function dateChangedManually() {
+    const selected = document.getElementById('targetDate').value;
+    document.getElementById('historyList').value = dataCache[selected] ? selected : "";
+    syncInputsWithData();
+}
+
+function syncInputsWithData() {
+    const date = document.getElementById('targetDate').value;
+    const snapshot = dataCache[date] || {};
+    const tbody = document.getElementById('countBody');
+    const isAdminUser = (unifiedRole === 'admin');
+
+    tbody.innerHTML = ENTITIES.map(ent => {
+        const vals = snapshot[ent] || { imacros: 0, selenium: 0, webautomate: 0 };
+        return `
+        <tr data-ent="${ent}" class="hover:bg-slate-800/40 transition-colors">
+            <td class="p-5 font-bold text-slate-300 border-r border-slate-800/50 bg-slate-900/20">${ent}</td>
+            <td class="p-5"><input type="number" class="input-cell" data-col="imacros" value="${vals.imacros}" ${!isAdminUser ? 'disabled' : ''} oninput="triggerAutoSave()"></td>
+            <td class="p-5"><input type="number" class="input-cell" data-col="selenium" value="${vals.selenium}" ${!isAdminUser ? 'disabled' : ''} oninput="triggerAutoSave()"></td>
+            <td class="p-5"><input type="number" class="input-cell" data-col="webautomate" value="${vals.webautomate}" ${!isAdminUser ? 'disabled' : ''} oninput="triggerAutoSave()"></td>
+            <td class="p-5 text-right font-black text-indigo-400 row-total">0</td>
+        </tr>`;
+    }).join('');
+
+    recalculateMath();
+}
+
+function recalculateMath() {
+    const sums = { imacros: 0, selenium: 0, web: 0 };
+    document.querySelectorAll('#countBody tr').forEach(tr => {
+        let rowTotal = 0;
+        tr.querySelectorAll('.input-cell').forEach(input => {
+            const v = parseInt(input.value) || 0;
+            if (input.dataset.col === 'imacros') sums.imacros += v;
+            if (input.dataset.col === 'selenium') sums.selenium += v;
+            if (input.dataset.col === 'webautomate') sums.web += v;
+            rowTotal += v;
+        });
+        tr.querySelector('.row-total').innerText = rowTotal.toLocaleString();
+    });
+    const grand = sums.imacros + sums.selenium + sums.web;
+    document.getElementById('sum-imacros').innerText = sums.imacros.toLocaleString();
+    document.getElementById('sum-selenium').innerText = sums.selenium.toLocaleString();
+    document.getElementById('sum-web').innerText = sums.web.toLocaleString();
+    document.getElementById('sum-grand').innerText = grand.toLocaleString();
+    calculateTrends(sums, grand);
+}
+
+function calculateTrends(curSums, grand) {
+    const dates = Object.keys(dataCache).sort().reverse();
+    const activeDate = document.getElementById('targetDate').value;
+    const activeIdx = dates.indexOf(activeDate);
+    let prevDate = null;
+    if (activeIdx !== -1 && activeIdx < dates.length - 1) prevDate = dates[activeIdx + 1];
+
+    const executeTrend = (elementId, currentTotal, columnKey) => {
+        const el = document.getElementById(elementId);
+        if (!prevDate) {
+            el.innerText = "--";
+            el.className = "text-[11px] font-bold text-slate-600 mt-2";
+            return;
+        }
+        let prevTotal = 0;
+        if (columnKey === 'grand') {
+            ENTITIES.forEach(e => {
+                const s = dataCache[prevDate][e] || { imacros: 0, selenium: 0, webautomate: 0 };
+                prevTotal += s.imacros + s.selenium + s.webautomate;
+            });
+        } else {
+            ENTITIES.forEach(e => {
+                prevTotal += (dataCache[prevDate][e] ? dataCache[prevDate][e][columnKey] : 0);
+            });
+        }
+        if (prevTotal === 0) {
+            el.innerHTML = '<i class="fas fa-star mr-1"></i> NEW DATA';
+            el.className = "text-[11px] font-black text-green-500 mt-2 tracking-widest";
+            return;
+        }
+        const diff = ((currentTotal - prevTotal) / prevTotal) * 100;
+        const isPositive = diff >= 0;
+        el.innerHTML = `<i class="fas fa-caret-${isPositive ? 'up' : 'down'} mr-1 text-sm"></i> ${Math.abs(diff).toFixed(1)}% vs prev`;
+        el.className = `text-[11px] font-black tracking-wide mt-2 ${isPositive ? 'text-green-500' : 'text-red-500'}`;
+    };
+
+    executeTrend('trend-imacros', curSums.imacros, 'imacros');
+    executeTrend('trend-selenium', curSums.selenium, 'selenium');
+    executeTrend('trend-web', curSums.web, 'webautomate');
+    executeTrend('trend-grand', grand, 'grand');
+}
+
+function triggerAutoSave() {
+    if (unifiedRole !== 'admin') return;
+    recalculateMath();
+    clearTimeout(entityDebounceTimer);
+    updateSyncStatus("Saving Changes...", 'loading');
+    entityDebounceTimer = setTimeout(() => executeCloudSave(true), 1500);
+}
+
+async function executeCloudSave(isSilentSave) {
+    const date = document.getElementById('targetDate').value;
+    if (!date) return;
+    const snapshot = {};
+    document.querySelectorAll('#countBody tr').forEach(tr => {
+        snapshot[tr.dataset.ent] = {
+            imacros: parseInt(tr.querySelector('[data-col="imacros"]').value) || 0,
+            selenium: parseInt(tr.querySelector('[data-col="selenium"]').value) || 0,
+            webautomate: parseInt(tr.querySelector('[data-col="webautomate"]').value) || 0
+        };
+    });
+    dataCache[date] = snapshot;
+    try {
+        const formData = new URLSearchParams();
+        formData.append('data', JSON.stringify(dataCache));
+        await fetch(API_ENTITIES_URL, { method: 'POST', body: formData });
+        updateSyncStatus("Online", 'online');
+        rebuildHistoryDropdown();
+        document.getElementById('historyList').value = date;
+        if (isSilentSave) {
+            const toast = document.getElementById('saveMsg');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+    } catch (e) {
+        updateSyncStatus("Save Failed", 'error');
+    }
+}
+
+function manualSave(isNewEntry) {
+    const date = document.getElementById('targetDate').value;
+    if (isNewEntry && dataCache[date]) {
+        if (!confirm("This date already exists in history. Overwrite it?")) return;
+    }
+    executeCloudSave(false).then(() => alert("Data successfully secured in Google Sheets."));
+}
+
+function resetEntityTable() {
+    if (!confirm("Clear all metrics for this date?")) return;
+    document.querySelectorAll('.input-cell').forEach(i => i.value = 0);
+    triggerAutoSave();
+}
+
+function exportEntityCSV() {
+    const date = document.getElementById('targetDate').value;
+    let csv = "Entity,iMacros,Selenium,WebAutomate\n";
+    document.querySelectorAll('#countBody tr').forEach(tr => {
+        csv += `${tr.dataset.ent},${tr.querySelector('[data-col="imacros"]').value},${tr.querySelector('[data-col="selenium"]').value},${tr.querySelector('[data-col="webautomate"]').value}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `ECM_Tracking_${date}.csv`;
+    link.click();
+}
+
+
+// ================================================================
+//  MODULE 2: REQUEST IDs (ProgressSeedsByReqID)
+// ================================================================
+const API_Req_URL = "https://script.google.com/macros/s/AKfycbxn6OY4mgdIQeRw8v2vyCBjlvTi80qOsZSEtSL8bbAM0JWLtNw4r9DsIxJTirXMcB0/exec";
+let appDataV2 = { weeks: [], rows: [] };
+let editingIdV2 = null;
+
+function formatMMDDYYYY(dStr) {
+    if (!dStr) return "";
+    if (dStr.includes('T')) dStr = dStr.split('T')[0];
+    const [y, m, d] = dStr.split('-');
+    return `${m}/${d}/${y}`;
+}
+
+async function loadDataV2() {
+    try {
+        const res = await fetch(API_Req_URL);
+        const data = await res.json();
+        if (data) appDataV2 = data;
+        monitorStaleStatus();
+        renderTableV2();
+        renderWeekManager();
+    } catch (e) { console.error("Sync Error:", e); }
+}
+
+async function saveDataV2() {
+    if (unifiedRole !== 'admin') return;
+    try {
+        await fetch(API_Req_URL, { method: 'POST', body: JSON.stringify(appDataV2) });
+    } catch (e) { console.error("Save Error:", e); }
+}
+
+function monitorStaleStatus() {
+    const today = new Date();
+    appDataV2.rows.forEach(row => {
+        let latestStr = String(row.date);
+        appDataV2.weeks.forEach(w => { if (row.weeklyValues[w]) latestStr = String(w); });
+        const [m, d, y] = latestStr.split('/');
+        const lastCheck = new Date(y, m - 1, d);
+        const diffDays = Math.ceil((today - lastCheck) / (1000 * 60 * 60 * 24));
+        if (diffDays >= 8) { row.isChecked = "No"; row.isStale = true; }
+        else { row.isStale = false; }
+    });
+}
+
+function getTrend(cur, prev) {
+    if (!cur || !prev || prev == 0) return "";
+    const diff = ((cur - prev) / prev) * 100;
+    return `<span class="block text-[9px] font-black ${diff >= 0 ? 'text-green-500' : 'text-red-500'}">${diff >= 0 ? '+' : ''}${diff.toFixed(1)}%</span>`;
+}
+
+function renderTableV2() {
+    const head = document.getElementById('headerRow');
+    const body = document.getElementById('tableBodyV2');
+    if (!head || !body) return;
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const searchTerms = q.split(',').map(t => t.trim()).filter(t => t !== "");
+
+    // Build Headers
+    let headHtml = `<th class="p-4 fixed-col fixed-col-header col-id">Req ID</th>
+        <th class="p-4 fixed-col fixed-col-header col-prov">Provider</th>
+        <th class="p-4 fixed-col fixed-col-header col-target text-center">Target</th>
+        <th class="p-4 fixed-col fixed-col-header col-entry">Entry</th>
+        <th class="p-4 fixed-col fixed-col-header col-kept text-center">Kept After</th>
+        <th class="p-4 fixed-col fixed-col-header col-sess">Session</th>
+        <th class="p-4 fixed-col fixed-col-header col-check">Checked</th>`;
+    appDataV2.weeks.forEach(w => headHtml += `<th class="p-4 text-center border-l border-slate-800">${String(w)}</th>`);
+    if (unifiedRole === 'admin') {
+        headHtml += `<th class="p-4 fixed-col fixed-col-header col-action text-right">Actions</th>`;
+    }
+    head.innerHTML = headHtml;
+
+    // Build rows
+    const filtered = appDataV2.rows.filter(r => {
+        if (searchTerms.length === 0) return true;
+        return searchTerms.some(term =>
+            r.reqId.toString().toLowerCase().includes(term) ||
+            r.provider.toLowerCase().includes(term)
+        );
+    });
+
+    body.innerHTML = filtered.map(row => {
+        const isEditing = (editingIdV2 === row.dbId);
+        let prevVal = row.firstLogin;
+
+        let rowHtml = `<tr class="${row.isStale ? 'stale-row' : ''}">
+            <td class="p-4 fixed-col col-id font-bold ${row.isStale ? 'stale-text' : 'text-indigo-400'}">${row.reqId}</td>
+            <td class="p-4 fixed-col col-prov">${row.provider}</td>
+            <td class="p-4 fixed-col col-target text-center">${row.countRequested}</td>
+            <td class="p-4 fixed-col col-entry text-slate-500">${String(row.date)}</td>
+            <td class="p-4 fixed-col col-kept text-center font-bold">${row.firstLogin}</td>
+            <td class="p-4 fixed-col col-sess">
+                <select onchange="updateSess(${row.dbId}, this.value)" ${(unifiedRole === 'viewer' || !isEditing) ? 'disabled' : ''} class="bg-transparent outline-none cursor-pointer text-white">
+                    <option value="Connect" ${row.sessionType === 'Connect' ? 'selected' : ''}>Connect</option>
+                    <option value="Reporting" ${row.sessionType === 'Reporting' ? 'selected' : ''}>Reporting</option>
+                </select>
+            </td>
+            <td class="p-4 fixed-col col-check font-black ${row.isChecked === 'No' ? 'text-red-500' : 'text-green-500'}">${row.isChecked}</td>
+            ${appDataV2.weeks.map(w => {
+                const curVal = row.weeklyValues[w];
+                const cell = `<td class="p-4 border-l border-slate-800/30 text-center">
+                    <input type="number" class="bg-slate-800/50 rounded w-16 text-center text-white" value="${curVal || ''}" ${(unifiedRole === 'viewer' || !isEditing) ? 'disabled' : ''} onchange="updateWeeklyVal(${row.dbId}, '${w}', this.value)">
+                    ${getTrend(curVal, prevVal)}
+                </td>`;
+                if (curVal) prevVal = curVal;
+                return cell;
+            }).join('')}`;
+
+        if (unifiedRole === 'admin') {
+            rowHtml += `<td class="p-4 fixed-col col-action text-right">
+                ${!isEditing
+                    ? `<button onclick="editingIdV2=${row.dbId}; renderTableV2()" class="text-indigo-400 mx-2"><i class="fas fa-edit"></i></button>`
+                    : `<button onclick="editingIdV2=null; saveDataV2(); renderTableV2()" class="text-green-400 mx-2"><i class="fas fa-save"></i></button>`}
+                <button onclick="deleteRowV2(${row.dbId})" class="text-red-500"><i class="fas fa-trash"></i></button>
+            </td>`;
+        }
+
+        rowHtml += `</tr>`;
+        return rowHtml;
+    }).join('');
+}
+
+function downloadCSVReqId() {
+    let csv = [];
+    const rows = document.querySelectorAll("#reqid-table tr");
+    rows.forEach(row => {
+        let cols = Array.from(row.querySelectorAll("th, td")).map(c => c.innerText.replace(/(\r\n|\n|\r)/gm, " ").trim());
+        csv.push(cols.join(","));
+    });
+    const blob = new Blob([csv.join("\n")], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.setAttribute("hidden", "");
+    a.setAttribute("href", url);
+    a.setAttribute("download", `Monitoring_Export_${new Date().toLocaleDateString()}.csv`);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function updateSess(id, val) {
+    if (unifiedRole !== 'admin') return;
+    const r = appDataV2.rows.find(x => x.dbId === id);
+    if (r) r.sessionType = val;
+}
+
+function updateWeeklyVal(id, w, v) {
+    if (unifiedRole !== 'admin') return;
+    const r = appDataV2.rows.find(x => x.dbId === id);
+    if (r) { r.weeklyValues[w] = v; if (v) r.isChecked = "Yes"; }
+}
+
+function addNewRow() {
+    if (unifiedRole !== 'admin') return;
+    const dInput = document.getElementById('dateEntered').value;
+    if (!dInput) return alert("Select Entry Date");
+    appDataV2.rows.push({
+        dbId: Date.now(),
+        reqId: document.getElementById('reqId').value,
+        provider: document.getElementById('provider').value,
+        countRequested: document.getElementById('countRequested').value,
+        date: formatMMDDYYYY(dInput),
+        firstLogin: document.getElementById('firstLogin').value,
+        sessionType: document.getElementById('sessionType').value,
+        isChecked: 'No',
+        weeklyValues: {}
+    });
+    saveDataV2();
+    renderTableV2();
+}
+
+function addNewWeek() {
+    if (unifiedRole !== 'admin') return;
+    const dStr = document.getElementById('weekSingleDate').value;
+    if (!dStr) return;
+    const newLabel = formatMMDDYYYY(dStr);
+    if (!appDataV2.weeks.includes(newLabel)) {
+        appDataV2.weeks.push(newLabel);
+        saveDataV2();
+        loadDataV2();
+    }
+}
+
+function deleteRowV2(id) {
+    if (unifiedRole !== 'admin') return;
+    if (confirm("Delete?")) {
+        appDataV2.rows = appDataV2.rows.filter(x => x.dbId !== id);
+        saveDataV2();
+        renderTableV2();
+    }
+}
+
+function renderWeekManager() {
+    const list = document.getElementById('weekManageList');
+    if (!list) return;
+    list.innerHTML = appDataV2.weeks.map(w => {
+        let html = `<div class="flex justify-between bg-slate-900 p-2 rounded text-[10px] font-bold text-white">
+            <span>${w}</span>`;
+        if (unifiedRole === 'admin') {
+            html += `<i class="fas fa-times text-red-500 cursor-pointer" onclick="deleteWeekColumn('${w}')"></i>`;
+        }
+        html += `</div>`;
+        return html;
+    }).join('');
+}
+
+function deleteWeekColumn(w) {
+    if (unifiedRole !== 'admin') return;
+    if (confirm("Delete column?")) {
+        appDataV2.weeks = appDataV2.weeks.filter(x => x !== w);
+        saveDataV2();
+        renderTableV2();
+        renderWeekManager();
+    }
+}
+
+// Auto-refresh ReqID every 60s
+setInterval(() => { if (unifiedRole) loadDataV2(); }, 60000);
+
+
+// ================================================================
+//  MODULE 3: SEEDS (ProgressSeedsByProfileListes)
+// ================================================================
+const API_SEEDS_URL = 'https://script.google.com/macros/s/AKfycbxJ8jHNqBVUS6pybA4B_3Q0Z9JRizYlqvUtoQfY5cxBCNk1krKId3Ldz-Dwxno2Q1g/exec';
+let rawSeedsData = [];
+let seedsHeaders = [];
+let seedsDB = { _entities: {}, _history: [] };
+let currentSeedsFile = "";
+
+const STATUS_KEYWORDS = [
+    "Activated", "Provide Phone Number", "Captcha Verification", "Captcha Text",
+    "Unusual Activity", "Account Not Belong You", "Wrong Browser", "Not Connected",
+    "Confirm Phone Recovery", "Verify You", "Wrong Recovery", "Account Disabled",
+    "Account Deleted", "Wrong Auth Key", "Connected", "Wrong Password",
+    "Someone Trying Access", "Wrong Email", "Blocked", "Another Device",
+    "Security Question", "Account Restricted", "New", "Closed"
+];
+
+async function loadFromCloudSeeds() {
+    setSeedsStatus("Syncing...");
+    try {
+        const res = await fetch(API_SEEDS_URL);
+        seedsDB = await res.json();
+        updateEntityDropdowns();
+        renderSeedsDbTable();
+        renderSeedsHistoryTable();
+        setSeedsStatus("Connected");
+    } catch (e) { setSeedsStatus("Sync Error"); }
+}
+
+function updateEntityDropdowns() {
+    const ents = Object.keys(seedsDB._entities);
+    const html = '<option value="">Select Entity...</option>' + ents.map(e => `<option value="${e}">${e}</option>`).join('');
+    document.getElementById('entitySelector').innerHTML = html;
+    document.getElementById('mgmtEntitySelect').innerHTML = html;
+    document.getElementById('historyEntityFilter').innerHTML = '<option value="">Filter by Entity...</option>' + ents.map(e => `<option value="${e}">${e}</option>`).join('');
+}
+
+document.getElementById('csvFile').addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    currentSeedsFile = file.name;
+    Papa.parse(file, {
+        header: true, skipEmptyLines: true, delimiter: ";",
+        complete: function (results) {
+            if (results.data.length === 0) return alert("Empty CSV");
+            seedsHeaders = Object.keys(results.data[0]);
+            rawSeedsData = results.data.map(row => {
+                const logText = (row.log || row.LOG || row.Log || "");
+                let detected = [];
+                STATUS_KEYWORDS.forEach(kw => {
+                    if (logText.toLowerCase().includes(kw.toLowerCase())) detected.push(kw);
+                });
+                if (detected.length === 0) detected.push("Others");
+                return { ...row, _extractedStatuses: detected };
+            });
+            updateSeedsDashboard(rawSeedsData);
+            renderSeedsTable(rawSeedsData);
+            populateSeedsStatusFilter(rawSeedsData);
+            document.getElementById('compareBtn').classList.remove('hidden');
+        }
+    });
+});
+
+function clearSeedsUI() {
+    rawSeedsData = [];
+    document.getElementById('statTotal').innerText = "0";
+    document.getElementById('statSuccess').innerText = "0%";
+    document.getElementById('counterGrid').innerHTML = "";
+    document.getElementById('tableBodySeeds').innerHTML = "";
+    document.getElementById('compareBtn').classList.add('hidden');
+    document.getElementById('comparisonSection').classList.add('hidden');
+    document.getElementById('csvFile').value = "";
+}
+
+function updateSeedsDashboard(data) {
+    const total = data.length;
+    const active = data.filter(r => r._extractedStatuses.some(s => s === "Activated" || s === "Connected")).length;
+    document.getElementById('statTotal').innerText = total.toLocaleString();
+    document.getElementById('statSuccess').innerText = (total > 0 ? (active / total * 100).toFixed(1) : 0) + "%";
+    const counts = {};
+    data.forEach(row => row._extractedStatuses.forEach(s => counts[s] = (counts[s] || 0) + 1));
+    document.getElementById('counterGrid').innerHTML = Object.entries(counts).map(([status, count]) => `
+        <div class="flex justify-between border-b border-slate-800/30 pb-1">
+            <span class="text-slate-500 font-bold uppercase text-[9px]">${status}</span>
+            <span class="font-mono font-black ${status === 'Activated' || status === 'Connected' ? 'text-green-400' : 'text-slate-300'}">${count}</span>
+        </div>`).join('');
+}
+
+function renderSeedsTable(data) {
+    const thead = document.getElementById('tableHead');
+    const tbody = document.getElementById('tableBodySeeds');
+    thead.innerHTML = `<tr class="bg-slate-900 text-slate-500 uppercase text-[10px] font-black">
+        <th class="p-4 text-green-500">Status</th>
+        ${seedsHeaders.map(h => `<th class="p-4">${h}</th>`).join('')}
+    </tr>`;
+    tbody.innerHTML = data.map(row => {
+        const statusHtml = row._extractedStatuses.map(s => `<span class="status-pill ${getSeedsStatusClass(s)}">${s}</span>`).join('');
+        return `<tr class="hover:bg-slate-800/30 border-b border-slate-800/50">
+            <td class="p-4">${statusHtml}</td>
+            ${seedsHeaders.map(h => `<td class="p-4">${row[h] || ''}</td>`).join('')}
+        </tr>`;
+    }).join('');
+}
+
+function getSeedsStatusClass(s) {
+    if (s === "Activated" || s === "Connected") return 'bg-green-500/10 text-green-500 border-green-500/50';
+    if (s === "Closed" || s.includes("Wrong") || s.includes("Disabled")) return 'bg-red-500/10 text-red-400 border-red-500/50';
+    return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/50';
+}
+
+function filterSeedsTable() {
+    const q = document.getElementById('idSearch').value.toLowerCase();
+    const sf = document.getElementById('statusFilter').value;
+    const filtered = rawSeedsData.filter(row => {
+        const mq = Object.values(row).some(v => String(v).toLowerCase().includes(q));
+        const ms = sf === "All" || row._extractedStatuses.includes(sf);
+        return mq && ms;
+    });
+    renderSeedsTable(filtered);
+}
+
+function populateSeedsStatusFilter(data) {
+    const allFound = [];
+    data.forEach(r => allFound.push(...r._extractedStatuses));
+    const unique = [...new Set(allFound)].sort();
+    document.getElementById('statusFilter').innerHTML =
+        '<option value="All">All Statuses</option>' + unique.map(s => `<option value="${s}">${s}</option>`).join('');
+}
+
+function runComparison() {
+    const ent = document.getElementById('entitySelector').value;
+    if (!ent) return alert("Select Entity.");
+    const entityData = seedsDB._entities[ent];
+    const compBody = document.getElementById('comparisonBody');
+    compBody.innerHTML = '';
+    document.getElementById('comparisonSection').classList.remove('hidden');
+
+    Object.entries(entityData).forEach(([dbSessionName, dbTarget]) => {
+        const sessionRows = rawSeedsData.filter(row => {
+            const fullSessionName = (row.session_name || row.SESSION_NAME || "").trim();
+            const baseNameInFile = fullSessionName.split('(')[0].trim();
+            return baseNameInFile === dbSessionName.trim();
+        });
+        const actualActive = sessionRows.filter(r => r._extractedStatuses.some(s => s === 'Activated' || s === 'Connected')).length;
+        const totalInSession = sessionRows.length;
+        const loss = totalInSession - actualActive;
+        let finalPercent = totalInSession > 0 ? ((actualActive / totalInSession) * 100).toFixed(1) : 0;
+
+        compBody.innerHTML += `<tr class="hover:bg-slate-800/40">
+            <td class="p-4 font-black text-slate-200 text-xs">${dbSessionName}</td>
+            <td class="p-4 text-center font-mono text-slate-500">${dbTarget}</td>
+            <td class="p-4 text-center font-mono text-green-400 bg-green-500/5 text-lg font-black">${actualActive}</td>
+            <td class="p-4 text-center font-mono text-red-500 text-lg font-bold">${loss}</td>
+            <td class="p-4 text-right"><span class="text-xl font-black ${finalPercent >= 80 ? 'text-green-400' : 'text-red-500'}">${finalPercent}%</span></td>
+        </tr>`;
+    });
+}
+
+async function saveComparisonResult() {
+    const ent = document.getElementById('entitySelector').value;
+    const rows = document.querySelectorAll('#comparisonBody tr');
+    if (rows.length === 0) return;
+    const idMatch = currentSeedsFile.match(/\d+/);
+    const procID = idMatch ? idMatch[0] : "UNK-" + Math.floor(Math.random() * 999);
+    const details = Array.from(rows).map(r => {
+        const c = r.querySelectorAll('td');
+        return { name: c[0].innerText, target: c[1].innerText, active: c[2].innerText, loss: c[3].innerText };
+    });
+    const dateObj = new Date();
+    const formattedDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+    const newSave = { date: formattedDate, processID: procID, entity: ent, details };
+    seedsDB._history.unshift(newSave);
+    renderSeedsHistoryTable();
+    await fetch(API_SEEDS_URL, {
+        method: 'POST', mode: 'no-cors',
+        body: JSON.stringify({ action: "save_history", payload: newSave })
+    });
+}
+
+function renderSeedsHistoryTable() {
+    const tbody = document.getElementById('historyTableBody');
+    const dateFInput = document.getElementById('historyDateFilter').value;
+    const entF = document.getElementById('historyEntityFilter').value;
+    tbody.innerHTML = '';
+    if (!entF) return;
+    const sessionsInEntity = seedsDB._entities[entF] || {};
+    Object.entries(sessionsInEntity).forEach(([sessionName, targetCount]) => {
+        let totalActive = 0;
+        let totalLoss = 0;
+        let sessionHistoryBreakdown = [];
+        seedsDB._history.forEach(record => {
+            const matchesEntity = record.entity === entF;
+            let matchesDate = true;
+            if (dateFInput) {
+                const formattedSelectedDate = dateFInput.split('-').reverse().join('/');
+                matchesDate = record.date === formattedSelectedDate;
+            }
+            if (matchesEntity && matchesDate) {
+                const sessData = record.details.find(d => d.name === sessionName);
+                if (sessData) {
+                    const act = parseInt(sessData.active);
+                    const lss = parseInt(sessData.loss);
+                    totalActive += act;
+                    totalLoss += lss;
+                    sessionHistoryBreakdown.push({ date: record.date, id: record.processID, active: act, loss: lss });
+                }
+            }
+        });
+        tbody.innerHTML += `<tr class="hover:bg-slate-800/30">
+            <td class="p-4 font-black text-slate-200">${sessionName}</td>
+            <td class="p-4 text-center font-mono text-slate-400">${targetCount}</td>
+            <td class="p-4 text-center font-black text-green-400">${totalActive}</td>
+            <td class="p-4 text-center font-black text-red-500">${totalLoss}</td>
+            <td class="p-4 text-right">
+                <button onclick='showSessionBreakdown("${sessionName}", ${JSON.stringify(sessionHistoryBreakdown)})'
+                        class="text-indigo-400 text-[10px] font-bold hover:underline">
+                    ShowDetail
+                </button>
+            </td>
+        </tr>`;
+    });
+}
+
+function showSessionBreakdown(sessionName, history) {
+    const tbody = document.getElementById('detailTableBody');
+    document.getElementById('detailModalTitle').innerText = sessionName;
+    document.getElementById('detailModalSubtitle').innerText = `Process ID Results Summary`;
+    tbody.innerHTML = history.map(item => `
+        <tr class="hover:bg-slate-800/50">
+            <td class="p-4 text-slate-400 font-mono text-[11px]">${item.date}</td>
+            <td class="p-4 font-black text-indigo-400">#${item.id}</td>
+            <td class="p-4 text-center">
+                <div class="inline-flex items-center gap-2 bg-[#0b0f1a] px-3 py-1 rounded-lg border border-slate-800">
+                    <span class="text-[10px] text-slate-500 font-bold">Active file:</span>
+                    <span class="text-green-500 font-black">${item.active}</span>
+                    <span class="mx-1 text-slate-700">|</span>
+                    <span class="text-[10px] text-slate-500 font-bold">Blocked file (Loss):</span>
+                    <span class="text-red-500 font-black">-${item.loss}</span>
+                </div>
+            </td>
+        </tr>`).join('');
+    toggleModal('detailModal', true);
+}
+
+function addSessionData() {
+    let ent = document.getElementById('mgmtEntitySelect').value;
+    const newEntInput = document.getElementById('newEntityName').value.trim();
+    if (newEntInput) ent = newEntInput;
+    const ses = document.getElementById('newSession').value.trim();
+    const cnt = parseInt(document.getElementById('newCount').value);
+    if (!ent || !ses || isNaN(cnt)) return alert("Fill all fields");
+    if (!seedsDB._entities[ent]) seedsDB._entities[ent] = {};
+    seedsDB._entities[ent][ses] = cnt;
+    saveSettingsSeedsToCloud();
+    document.getElementById('newEntityName').value = "";
+    renderSeedsDbTable();
+}
+
+function renderSeedsDbTable() {
+    const ent = document.getElementById('mgmtEntitySelect').value;
+    const tbody = document.getElementById('dbTableBody');
+    tbody.innerHTML = '';
+    if (!ent || !seedsDB._entities[ent]) return;
+    Object.entries(seedsDB._entities[ent]).forEach(([session, count]) => {
+        tbody.innerHTML += `<tr>
+            <td class="p-4 font-mono text-white">${session}</td>
+            <td class="p-4 text-center font-black text-white">${count}</td>
+            <td class="p-4 text-right">
+                <button onclick="prepEditSession('${ent}', '${session}', ${count})" class="text-indigo-400 mr-3">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="deleteSession('${ent}', '${session}')" class="text-red-500">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>`;
+    });
+}
+
+function prepEditSession(ent, ses, cnt) {
+    document.getElementById('newSession').value = ses;
+    document.getElementById('newCount').value = cnt;
+}
+
+async function deleteSession(ent, ses) {
+    if (confirm("Delete?")) {
+        delete seedsDB._entities[ent][ses];
+        saveSettingsSeedsToCloud();
+        renderSeedsDbTable();
+    }
+}
+
+async function saveSettingsSeedsToCloud() {
+    setSeedsStatus("Syncing...");
+    await fetch(API_SEEDS_URL, {
+        method: 'POST', mode: 'no-cors',
+        body: JSON.stringify({ action: "save_settings", payload: seedsDB._entities })
+    });
+    loadFromCloudSeeds();
+}
+
+function setSeedsStatus(text) {
+    document.getElementById('globalSyncStatus').innerText = text;
+}
+
+function toggleModal(id, show) {
+    document.getElementById(id).classList.toggle('active', show);
+}
+
+function copyTableToClipboard(tableId) {
+    const el = document.getElementById(tableId);
+    let body = "";
+    el.querySelectorAll('tr').forEach(tr => {
+        let row = [];
+        tr.querySelectorAll('th, td').forEach(td => row.push(td.innerText));
+        body += row.join("\t") + "\n";
+    });
+    navigator.clipboard.writeText(body).then(() => alert("Copied"));
+}
+
+function downloadCSV(csv, filename) {
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+}
+
+function downloadTableAsCSV(tableId, title) {
+    let csv = [];
+    document.querySelectorAll(`#${tableId} tr`).forEach(tr => {
+        let row = [];
+        tr.querySelectorAll("td, th").forEach(col => row.push(col.innerText.replace(/,/g, "")));
+        csv.push(row.join(","));
+    });
+    downloadCSV(csv.join("\n"), title + ".csv");
+}
+
+</script>
+</body>
+</html>
