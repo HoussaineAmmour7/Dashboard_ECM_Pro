@@ -7,1667 +7,1350 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap');
-
-        /* =============================================
-           BASE & THEME VARIABLES
-        ============================================= */
         :root {
-            --bg-base: #0b0f1a;
-            --bg-card: #111827;
-            --bg-deep: #0f172a;
-            --border: #1e293b;
-            --text-primary: #e2e8f0;
-            --text-muted: #64748b;
-            --sidebar-w: 240px;
+            --bg-base:    #070b13;
+            --bg-panel:   #0d1422;
+            --bg-surface: #111a2e;
+            --bg-input:   #0a1020;
+            --border:     #1c2a45;
+            --border-hi:  #243551;
+            --text-pri:   #e8edf5;
+            --text-sec:   #8a9ab8;
+            --text-mute:  #4a5a78;
+            --accent:     #3b82f6;
+            --accent-hi:  #60a5fa;
+            --green:      #22c55e;
+            --green-dim:  #16a34a;
+            --red:        #ef4444;
+            --indigo:     #818cf8;
+            --amber:      #f59e0b;
+        }
+        body.light {
+            --bg-base:    #f0f4fb;
+            --bg-panel:   #ffffff;
+            --bg-surface: #f8faff;
+            --bg-input:   #eef2fa;
+            --border:     #dde4f0;
+            --border-hi:  #c8d3e8;
+            --text-pri:   #0f1928;
+            --text-sec:   #445577;
+            --text-mute:  #8899bb;
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-base);
-            color: var(--text-primary);
-            transition: background 0.3s, color 0.3s;
-        }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        html,body{height:100%;overflow:hidden;}
+        body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-pri);transition:background .25s,color .25s;}
 
-        /* =============================================
-           LIGHT MODE OVERRIDES
-        ============================================= */
-        body.light-mode {
-            --bg-base: #f1f5f9;
-            --bg-card: #ffffff;
-            --bg-deep: #e2e8f0;
-            --border: #cbd5e1;
-            --text-primary: #0f172a;
-            --text-muted: #64748b;
-        }
-        body.light-mode { background-color: var(--bg-base); color: var(--text-primary); }
-        body.light-mode .lm-bg-base { background-color: var(--bg-base) !important; }
-        body.light-mode .lm-bg-card { background-color: var(--bg-card) !important; }
-        body.light-mode .lm-border { border-color: var(--border) !important; }
-        body.light-mode .lm-text { color: var(--text-primary) !important; }
-        body.light-mode .lm-text-muted { color: var(--text-muted) !important; }
-        body.light-mode #sidebar { background-color: var(--bg-card); border-color: var(--border); }
-        body.light-mode .sidebar-bottom { background-color: var(--bg-deep); border-color: var(--border); }
-        body.light-mode .nav-link-active { background: rgba(99,102,241,0.12); }
-        body.light-mode input, body.light-mode select { background-color: var(--bg-deep) !important; color: var(--text-primary) !important; border-color: var(--border) !important; }
-        body.light-mode .input-cell { color: var(--text-primary) !important; }
-        body.light-mode .input-cell:disabled { color: var(--text-muted) !important; }
-        body.light-mode .page-section { background-color: var(--bg-base); }
-        body.light-mode #page-entity .bg-\[\#111827\],
-        body.light-mode #page-reqid .bg-\[\#111827\],
-        body.light-mode #page-seeds .bg-\[\#111827\] { background-color: var(--bg-card) !important; }
-        body.light-mode #page-entity .bg-\[\#0b0f1a\],
-        body.light-mode #page-reqid .bg-\[\#0b0f1a\],
-        body.light-mode #page-seeds .bg-\[\#0b0f1a\] { background-color: var(--bg-base) !important; }
-        body.light-mode .fixed-col { background: var(--bg-card) !important; }
-        body.light-mode .fixed-col-header { background: var(--bg-deep) !important; }
-        body.light-mode .stale-row td { background: rgba(239,68,68,0.08) !important; }
-        body.light-mode #loginOverlay { background: rgba(241,245,249,0.98); }
-        body.light-mode .login-card { background: var(--bg-card) !important; border-color: var(--border) !important; }
-        body.light-mode .modal > div { background: var(--bg-card) !important; border-color: var(--border) !important; }
-        body.light-mode #page-reqid .bg-slate-900\/80 { background: var(--bg-deep) !important; }
-        body.light-mode input[type="date"]::-webkit-calendar-picker-indicator { filter: none; }
-        body.light-mode .save-toast { background: #16a34a !important; }
-        body.light-mode .text-white { color: var(--text-primary) !important; }
-        body.light-mode .text-gray-200 { color: var(--text-primary) !important; }
+        /* scrollbar */
+        ::-webkit-scrollbar{width:4px;height:4px;}
+        ::-webkit-scrollbar-track{background:transparent;}
+        ::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:99px;}
 
-        /* =============================================
-           ADMIN-ONLY VISIBILITY
-        ============================================= */
-        .admin-only { display: none !important; }
-        body.is-admin .admin-only { display: flex !important; }
-        body.is-admin .admin-only-inline { display: inline-flex !important; }
+        /* admin gates */
+        .admin-only{display:none!important;}
+        body.is-admin .admin-only{display:flex!important;}
+        body.is-admin .admin-block{display:block!important;}
 
-        /* =============================================
-           SCROLLBAR
-        ============================================= */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #111827; }
-        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+        /* panels */
+        .panel{background:var(--bg-panel);border:1px solid var(--border);}
+        .surface{background:var(--bg-surface);border:1px solid var(--border);}
+        .inp{background:var(--bg-input);border:1px solid var(--border);color:var(--text-pri);outline:none;transition:border-color .15s;}
+        .inp:focus{border-color:var(--accent);}
+        .inp::placeholder{color:var(--text-mute);}
 
-        /* =============================================
-           LOGIN OVERLAY
-        ============================================= */
-        #loginOverlay {
-            position: fixed; inset: 0; z-index: 9999;
-            background: #0b0f1a;
-            display: flex; align-items: center; justify-content: center;
-        }
+        /* nav */
+        .nav-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-sec);transition:all .15s;letter-spacing:.02em;}
+        .nav-link:hover{background:rgba(59,130,246,.07);color:var(--text-pri);}
+        .nav-link.active{background:rgba(59,130,246,.12);color:var(--accent-hi);}
+        .nav-link .dot{width:5px;height:5px;border-radius:50%;background:var(--border-hi);flex-shrink:0;transition:background .15s;}
+        .nav-link.active .dot{background:var(--accent);}
 
-        /* =============================================
-           SIDEBAR NAV
-        ============================================= */
-        #sidebar {
-            width: var(--sidebar-w);
-            background: #111827;
-            border-right: 1px solid #1e293b;
-            display: flex; flex-direction: column;
-            height: 100vh;
-            position: fixed;
-            top: 0; left: 0;
-            z-index: 50;
-            transition: background 0.3s, border-color 0.3s;
-        }
-        #mainContent {
-            margin-left: var(--sidebar-w);
-            height: 100vh;
-            overflow: hidden;
-        }
-        .nav-link {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px 12px;
-            border-radius: 10px;
-            font-size: 12px; font-weight: 700;
-            color: #64748b;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-transform: uppercase; letter-spacing: 0.05em;
-            border: none; background: none; width: 100%; text-align: left;
-        }
-        .nav-link:hover { background: rgba(255,255,255,0.04); color: #e2e8f0; }
-        .nav-link.active { background: rgba(99,102,241,0.12); color: #818cf8; }
-        .nav-link .nav-dot {
-            width: 6px; height: 6px; border-radius: 50%;
-            background: currentColor;
-            flex-shrink: 0;
-        }
+        /* views */
+        .view{display:none;flex-direction:column;flex:1;overflow:hidden;}
+        .view.active{display:flex;}
 
-        /* =============================================
-           PAGE SECTIONS
-        ============================================= */
-        .page-section { display: none; height: 100vh; overflow: hidden; }
-        .page-section.active { display: block; }
+        /* input-cell for v1 table */
+        .input-cell{background:transparent;width:100%;outline:none;color:var(--text-pri);font-weight:700;border-bottom:2px solid transparent;transition:border-color .15s;font-family:'JetBrains Mono',monospace;}
+        .input-cell:focus{border-bottom-color:var(--green);}
+        .input-cell:disabled{color:var(--text-sec);cursor:not-allowed;}
+        input[type="number"]::-webkit-inner-spin-button{display:none;}
+        input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.6);cursor:pointer;}
+        body.light input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.3);}
 
-        /* =============================================
-           ENTITY PAGE SPECIFICS
-        ============================================= */
-        input[type="number"]::-webkit-inner-spin-button { display: none; }
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-        .input-cell {
-            background: transparent; width: 100%; outline: none;
-            color: #fff; font-weight: 700;
-            border-bottom: 2px solid transparent; transition: border-color 0.2s;
-        }
-        .input-cell:enabled:focus { border-bottom: 2px solid #10b981; }
-        .input-cell:disabled { color: #64748b; cursor: not-allowed; }
-        .save-toast {
-            transition: all 0.4s ease-in-out;
-            transform: translateY(150%); opacity: 0;
-        }
-        .save-toast.show { transform: translateY(0); opacity: 1; }
+        /* toast */
+        .toast{transition:transform .35s,opacity .35s;transform:translateY(120%);opacity:0;pointer-events:none;}
+        .toast.show{transform:translateY(0);opacity:1;}
 
-        /* =============================================
-           REQ ID PAGE SPECIFICS - HORIZONTAL SCROLL (DO NOT MODIFY)
-        ============================================= */
-        .sticky-wrapper { overflow-x: auto; position: relative; border-radius: 1rem; }
-        .sticky-table th, .sticky-table td { white-space: nowrap; }
-        .fixed-col { position: sticky; background: #111827; z-index: 20; }
-        .fixed-col-header { z-index: 30 !important; background: #0f172a !important; }
-        .col-id   { left: 0;   min-width: 120px; }
-        .col-prov { left: 120px; min-width: 80px; }
-        .col-target { left: 200px; min-width: 80px; }
-        .col-entry  { left: 280px; min-width: 100px; }
-        .col-kept   { left: 380px; min-width: 120px; }
-        .col-sess   { left: 500px; min-width: 110px; }
-        .col-check  { left: 610px; min-width: 80px; }
-        .col-action { right: 0; background: #111827; box-shadow: -2px 0 5px rgba(0,0,0,0.3); }
-        .stale-row { background: rgba(239,68,68,0.18) !important; border-bottom: 2px solid #ef4444 !important; }
-        .stale-text { color: #ef4444 !important; font-weight: 900 !important; }
-        #reqid-table input:disabled, #reqid-table select:disabled {
-            opacity: 1; color: inherit; border: none;
-            background: transparent; -webkit-appearance: none;
-        }
+        /* sticky v2 table */
+        .sticky-tbl th,.sticky-tbl td{white-space:nowrap;}
+        .fx{position:sticky;background:var(--bg-panel);z-index:20;}
+        .fx-hd{z-index:30!important;background:var(--bg-input)!important;}
+        .c-id{left:0;min-width:120px;}
+        .c-pv{left:120px;min-width:80px;}
+        .c-tg{left:200px;min-width:80px;}
+        .c-en{left:280px;min-width:100px;}
+        .c-kp{left:380px;min-width:120px;}
+        .c-ss{left:500px;min-width:110px;}
+        .c-ck{left:610px;min-width:80px;}
+        .c-ac{right:0;box-shadow:-2px 0 8px rgba(0,0,0,.4);}
+        body.light .fx{background:var(--bg-panel);}
+        body.light .fx-hd{background:var(--bg-input)!important;}
+        .stale-row{background:rgba(239,68,68,.07)!important;}
+        .stale-txt{color:#ef4444!important;font-weight:900!important;}
+        select:disabled,input:disabled{opacity:1;color:inherit;border:none;background:transparent;-webkit-appearance:none;}
 
-        /* =============================================
-           SEEDS PAGE SPECIFICS
-        ============================================= */
-        .table-container { max-height: 60vh; overflow: auto; }
-        .status-pill {
-            padding: 2px 8px; border-radius: 4px;
-            font-size: 10px; font-weight: 700; text-transform: uppercase;
-            border-width: 1px; display: inline-block;
-            margin-right: 4px; margin-bottom: 2px;
-        }
-        .modal {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.85); z-index: 200;
-            align-items: center; justify-content: center;
-            backdrop-filter: blur(4px);
-        }
-        .modal.active { display: flex; }
+        /* status pills */
+        .spill{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;border-width:1px;border-style:solid;display:inline-block;margin-right:3px;margin-bottom:2px;}
 
-        /* =============================================
-           DARK MODE TOGGLE BUTTON
-        ============================================= */
-        #themeToggle {
-            width: 40px; height: 22px;
-            background: #374151;
-            border-radius: 999px;
-            position: relative; cursor: pointer;
-            border: none; outline: none;
-            transition: background 0.3s;
-            flex-shrink: 0;
-        }
-        #themeToggle::after {
-            content: '';
-            position: absolute;
-            top: 3px; left: 3px;
-            width: 16px; height: 16px;
-            background: #e2e8f0;
-            border-radius: 50%;
-            transition: transform 0.3s;
-        }
-        body.light-mode #themeToggle { background: #6366f1; }
-        body.light-mode #themeToggle::after { transform: translateX(18px); }
+        /* modal */
+        .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+        .modal.open{display:flex;}
+
+        /* stat card glow on hover */
+        .stat-card{transition:box-shadow .2s,border-color .2s;}
+        .stat-card:hover{border-color:var(--border-hi);}
+
+        /* monospace nums */
+        .mono{font-family:'JetBrains Mono',monospace;}
+
+        /* pill badge */
+        .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+
+        /* progress bar */
+        .pbar-track{height:3px;border-radius:99px;background:var(--border);overflow:hidden;}
+        .pbar-fill{height:100%;border-radius:99px;transition:width .4s;}
+
+        /* upload area v3 */
+        .upload-zone{border:2px dashed var(--border);border-radius:12px;padding:32px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+        .upload-zone:hover{border-color:var(--green-dim);background:rgba(34,197,94,.04);}
+
+        /* table container max-h */
+        .tbl-scroll{max-height:55vh;overflow:auto;}
+
+        /* section label */
+        .sec-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-mute);}
+
+        /* glow accents */
+        .glow-green{box-shadow:0 0 0 1px rgba(34,197,94,.2),0 4px 24px rgba(34,197,94,.06);}
+        .glow-blue{box-shadow:0 0 0 1px rgba(59,130,246,.2),0 4px 24px rgba(59,130,246,.06);}
     </style>
 </head>
-<body>
+<body class="overflow-hidden">
 
-<!-- =============================================
-     UNIFIED LOGIN OVERLAY
-============================================= -->
-<div id="loginOverlay">
-    <div class="login-card bg-[#111827] p-10 rounded-3xl border border-slate-800 shadow-2xl w-full max-w-sm text-center">
-        <div class="w-16 h-16 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <i class="fas fa-lock text-2xl text-indigo-500"></i>
+<!-- ══════════════════════════════════════
+     LOGIN OVERLAY
+════════════════════════════════════════ -->
+<div id="loginOverlay" class="fixed inset-0 z-[9999] flex items-center justify-center" style="background:var(--bg-base);">
+    <div class="panel rounded-2xl p-10 w-full max-w-xs text-center shadow-2xl" style="background:var(--bg-panel);">
+        <div class="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-6" style="background:rgba(59,130,246,.1);">
+            <i class="fas fa-shield-alt text-xl" style="color:var(--accent);"></i>
         </div>
-        <h1 class="font-black text-2xl mb-1 text-white tracking-tight">ECM <span class="text-green-500">PRO</span></h1>
-        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-6">Dashboard Access Portal</p>
-        <input type="password" id="unifiedPass"
-               class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl mb-5 text-center text-lg text-white outline-none focus:border-indigo-500 transition-colors"
-               placeholder="Enter Access Code"
-               onkeydown="if(event.key==='Enter') unifiedLoginAttempt('admin')">
-        <div class="grid grid-cols-2 gap-3 mb-3">
-            <button onclick="unifiedLoginAttempt('admin')"
-                    class="bg-indigo-600 hover:bg-indigo-500 transition-colors p-3 rounded-xl text-xs font-bold text-white tracking-wider">
-                <i class="fas fa-shield-alt mr-2"></i>ADMIN
+        <p class="font-black text-base tracking-widest uppercase mb-1" style="color:var(--text-pri);">ECM Pro</p>
+        <p class="sec-label mb-7">Secure Access</p>
+        <input type="password" id="authPassCode" autocomplete="off"
+            class="inp w-full rounded-xl px-4 py-3 text-center text-sm mb-5 font-mono"
+            placeholder="Enter access code"
+            onfocus="this.style.borderColor='var(--accent)'"
+            onblur="this.style.borderColor='var(--border)'"
+            onkeydown="if(event.key==='Enter') unifiedLogin('admin')">
+        <div class="grid grid-cols-2 gap-2 mb-4">
+            <button onclick="unifiedLogin('admin')"
+                class="py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90"
+                style="background:var(--accent);">
+                <i class="fas fa-user-shield mr-1.5 text-[10px]"></i>Admin
             </button>
-            <button onclick="unifiedLoginAttempt('viewer')"
-                    class="bg-slate-700 hover:bg-slate-600 transition-colors p-3 rounded-xl text-xs font-bold text-white tracking-wider">
-                <i class="fas fa-eye mr-2"></i>VIEWER
+            <button onclick="unifiedLogin('viewer')"
+                class="py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90"
+                style="background:var(--bg-surface);border:1px solid var(--border);color:var(--text-sec);">
+                <i class="fas fa-eye mr-1.5 text-[10px]"></i>Viewer
             </button>
         </div>
-        <p id="loginError" class="text-red-500 text-[10px] font-black uppercase hidden mt-2">Invalid Access Code</p>
+        <p id="authError" class="hidden text-red-500 text-[10px] font-bold tracking-wide">
+            <i class="fas fa-exclamation-triangle mr-1"></i>Invalid access code
+        </p>
     </div>
 </div>
 
-<!-- =============================================
-     SIDEBAR
-============================================= -->
-<div id="sidebar">
-    <div class="p-5 border-b border-slate-800">
-        <h1 class="text-xl font-black text-white tracking-tight leading-none">ECM <span class="text-green-500">PRO</span></h1>
-        <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">Dashboard Suite</p>
-        <div id="sidebarRoleBadge"
-             class="mt-2 inline-block px-2 py-0.5 bg-slate-800 border border-slate-700 text-[9px] font-black uppercase text-slate-400 rounded">
-            Initializing...
-        </div>
-    </div>
+<!-- ══════════════════════════════════════
+     MAIN LAYOUT
+════════════════════════════════════════ -->
+<div class="flex h-screen overflow-hidden">
 
-    <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
-        <p class="text-[9px] text-slate-600 font-black uppercase tracking-widest px-2 pb-1 pt-2">Modules</p>
-        <button class="nav-link active" id="nav-entity" onclick="switchPage('entity')">
-            <span class="nav-dot"></span>
-            <i class="fas fa-building w-4 text-center"></i>
-            Global Count
-        </button>
-        <button class="nav-link" id="nav-reqid" onclick="switchPage('reqid')">
-            <span class="nav-dot"></span>
-            <i class="fas fa-id-card w-4 text-center"></i>
-            Request IDs
-        </button>
-        <button class="nav-link" id="nav-seeds" onclick="switchPage('seeds')">
-            <span class="nav-dot"></span>
-            <i class="fas fa-seedling w-4 text-center"></i>
-            Tracking Seeds
-        </button>
-    </nav>
-
-    <div class="sidebar-bottom p-3 border-t border-slate-800 bg-slate-900/60 space-y-3">
-        <!-- Dark/Light toggle -->
-        <div class="flex items-center justify-between px-1">
-            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-2">
-                <i id="themeIcon" class="fas fa-moon text-slate-500"></i> Dark Mode
-            </span>
-            <button id="themeToggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode"></button>
+    <!-- ── SIDEBAR ── -->
+    <aside class="w-60 flex flex-col flex-shrink-0 border-r" style="background:var(--bg-panel);border-color:var(--border);">
+        <!-- brand -->
+        <div class="px-5 pt-6 pb-5 border-b" style="border-color:var(--border);">
+            <div class="flex items-center gap-2.5 mb-3">
+                <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:var(--accent);flex-shrink:0;">
+                    <i class="fas fa-chart-network text-white text-xs"></i>
+                </div>
+                <span class="font-black text-sm tracking-tight" style="color:var(--text-pri);">DASHBOARD <span style="color:var(--green);">ECM</span> <span style="color:var(--indigo);">PRO</span></span>
+            </div>
+            <span id="globalRoleBadge" class="badge" style="background:rgba(74,90,120,.2);color:var(--text-mute);border:1px solid var(--border);">Initializing</span>
         </div>
-        <!-- Sync status -->
-        <div class="flex items-center justify-between px-1">
+
+        <!-- nav -->
+        <nav class="flex-1 p-3 space-y-0.5 overflow-y-auto">
+            <div class="nav-link active" onclick="switchView('v1')" id="nav-v1">
+                <span class="dot"></span>
+                <i class="fas fa-chart-bar w-3.5 text-center text-[11px]"></i>
+                <span>Global Count</span>
+            </div>
+            <div class="nav-link" onclick="switchView('v2')" id="nav-v2">
+                <span class="dot"></span>
+                <i class="fas fa-id-card w-3.5 text-center text-[11px]"></i>
+                <span>Request IDs</span>
+            </div>
+            <div class="nav-link" onclick="switchView('v3')" id="nav-v3">
+                <span class="dot"></span>
+                <i class="fas fa-seedling w-3.5 text-center text-[11px]"></i>
+                <span>Tracking Seeds</span>
+            </div>
+        </nav>
+
+        <!-- footer -->
+        <div class="p-4 border-t space-y-3" style="border-color:var(--border);">
             <div class="flex items-center gap-2">
-                <div id="globalSyncDot" class="w-2 h-2 rounded-full bg-slate-600"></div>
-                <span id="globalSyncStatus" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Connecting</span>
+                <div id="globalSyncDot" class="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
+                <span id="globalSyncStatus" class="sec-label">Connecting</span>
             </div>
-            <button onclick="unifiedLogout()" title="Logout" class="text-slate-600 hover:text-red-500 transition text-xs">
-                <i class="fas fa-sign-out-alt"></i>
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- =============================================
-     MAIN CONTENT AREA
-============================================= -->
-<div id="mainContent">
-
-    <!-- ============================================
-         PAGE 1: ProgressSeedsByEntity
-    ============================================= -->
-    <div id="page-entity" class="page-section active">
-        <div class="h-screen overflow-y-auto p-8 relative bg-[#0b0f1a]">
-
-            <!-- Header -->
-            <div class="flex flex-wrap justify-between items-end gap-6 mb-8">
-                <div>
-                    <h2 class="text-3xl font-black uppercase text-white tracking-tight">
-                        Global <span class="text-green-500">Count</span>
-                    </h2>
-                    <p class="text-xs text-slate-400 mt-1 font-semibold">15-Day Cycle Performance Tracking</p>
-
-                    <div class="mt-5 flex flex-wrap items-center gap-3 bg-slate-900/80 p-2 pl-4 rounded-xl border border-slate-700 shadow-inner">
-                        <input type="date" id="targetDate" onchange="dateChangedManually()"
-                               class="bg-transparent text-green-400 font-bold outline-none cursor-pointer">
-                        <div class="h-5 w-px bg-slate-700"></div>
-                        <select id="historyList" onchange="historyChanged()"
-                                class="bg-slate-800 text-white text-xs font-bold outline-none rounded-lg p-2 border border-slate-600 cursor-pointer focus:ring-2 focus:ring-green-500 transition-shadow">
-                            <option value="" class="bg-slate-800 text-slate-400">-- Select History --</option>
-                        </select>
-                        <button onclick="fetchEntityData()"
-                                class="ml-2 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2">
-                            <i class="fas fa-sync-alt"></i> Refresh
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex flex-wrap gap-2 admin-only">
-                    <button onclick="manualSave(true)"
-                            class="bg-blue-600 hover:bg-blue-500 transition px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-lg shadow-blue-900/20">
-                        <i class="fas fa-plus-circle mr-2"></i>Save New
-                    </button>
-                    <button onclick="manualSave(false)"
-                            class="bg-green-600 hover:bg-green-500 transition px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-lg shadow-green-900/20">
-                        <i class="fas fa-cloud-upload-alt mr-2"></i>Update
-                    </button>
-                    <button onclick="resetEntityTable()"
-                            class="bg-slate-700 hover:bg-slate-600 transition px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider">
-                        <i class="fas fa-eraser mr-2"></i>Clear
-                    </button>
-                    <button onclick="exportEntityCSV()"
-                            class="bg-amber-600 hover:bg-amber-500 transition px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-lg shadow-amber-900/20">
-                        <i class="fas fa-file-csv mr-2"></i>CSV
-                    </button>
-                </div>
-            </div>
-
-            <!-- Stat Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div class="bg-[#111827] p-6 rounded-2xl border border-slate-800 shadow-sm relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-16 h-16 bg-slate-800 rounded-bl-full opacity-20"></div>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">iMacros</p>
-                    <p id="sum-imacros" class="text-3xl font-black text-white">0</p>
-                    <div id="trend-imacros" class="text-[11px] font-bold mt-2">--</div>
-                </div>
-                <div class="bg-[#111827] p-6 rounded-2xl border border-slate-800 shadow-sm relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-16 h-16 bg-slate-800 rounded-bl-full opacity-20"></div>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Selenium</p>
-                    <p id="sum-selenium" class="text-3xl font-black text-white">0</p>
-                    <div id="trend-selenium" class="text-[11px] font-bold mt-2">--</div>
-                </div>
-                <div class="bg-[#111827] p-6 rounded-2xl border border-slate-800 shadow-sm relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-16 h-16 bg-slate-800 rounded-bl-full opacity-20"></div>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">WebAutomate</p>
-                    <p id="sum-web" class="text-3xl font-black text-white">0</p>
-                    <div id="trend-web" class="text-[11px] font-bold mt-2">--</div>
-                </div>
-                <div class="bg-indigo-900/20 p-6 rounded-2xl border border-indigo-500/30 shadow-lg shadow-indigo-500/5 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-500 rounded-bl-full opacity-10"></div>
-                    <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest mb-1">Grand Total</p>
-                    <p id="sum-grand" class="text-4xl font-black text-white">0</p>
-                    <div id="trend-grand" class="text-[11px] font-bold mt-2">--</div>
-                </div>
-            </div>
-
-            <!-- Table -->
-            <div class="bg-[#111827] rounded-3xl border border-slate-800 overflow-hidden shadow-2xl">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-900/80 border-b border-slate-800 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                        <tr>
-                            <th class="p-5 w-1/5">Entity Name</th>
-                            <th class="p-5 w-1/5">iMacros</th>
-                            <th class="p-5 w-1/5">Selenium</th>
-                            <th class="p-5 w-1/5">WebAutomate</th>
-                            <th class="p-5 w-1/5 text-right text-indigo-400">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody id="countBody" class="divide-y divide-slate-800/60"></tbody>
-                </table>
-            </div>
-
-            <!-- Save Toast -->
-            <div id="saveMsg"
-                 class="save-toast fixed bottom-8 right-8 bg-green-600 border border-green-500 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3">
-                <i class="fas fa-check-circle text-lg"></i>
-                <div>
-                    <p class="text-xs font-black uppercase tracking-widest">Synced</p>
-                    <p class="text-[10px] text-green-200">Data secured in Google Sheets</p>
-                </div>
+            <div class="flex items-center justify-between">
+                <button onclick="toggleTheme()" id="themeToggle"
+                    class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border transition-all"
+                    style="color:var(--text-sec);border-color:var(--border);background:var(--bg-surface);">
+                    <i id="themeIcon" class="fas fa-moon text-indigo-400 text-xs"></i>
+                    <span id="themeLabel">Dark</span>
+                </button>
+                <button onclick="logoutDashboard()" title="Logout"
+                    class="w-8 h-8 rounded-lg flex items-center justify-center transition hover:opacity-80"
+                    style="color:var(--text-mute);background:var(--bg-surface);border:1px solid var(--border);">
+                    <i class="fas fa-sign-out-alt text-xs"></i>
+                </button>
             </div>
         </div>
-    </div><!-- end page-entity -->
+    </aside>
 
+    <!-- ── CONTENT ── -->
+    <div class="flex-1 flex overflow-hidden" style="background:var(--bg-base);">
 
-    <!-- ============================================
-         PAGE 2: ProgressSeedsByReqID
-    ============================================= -->
-    <div id="page-reqid" class="page-section">
-        <section id="reqIdDashboard" class="h-screen flex overflow-hidden bg-[#111827]">
+        <!-- ════════════════════════════════
+             VIEW 1 — Global Count
+        ════════════════════════════════ -->
+        <div id="view-v1" class="view active overflow-y-auto">
+            <div class="p-8 max-w-6xl mx-auto w-full">
 
-            <!-- Left Sidebar Panel (Admin Form) -->
-            <div class="w-72 bg-[#111827] border-r border-slate-800 p-6 overflow-y-auto space-y-6 flex-shrink-0">
-                <div id="adminNewEntry">
-                    <h3 class="text-xs font-black text-green-500 uppercase tracking-widest border-b border-slate-800 pb-2">New Entry</h3>
-                    <div class="space-y-4 pt-4">
-                        <input type="text" id="reqId" placeholder="Req ID"
-                               class="w-full bg-[#0b0f1a] border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none text-white">
-                        <input type="text" id="provider" placeholder="Provider"
-                               class="w-full bg-[#0b0f1a] border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none text-white">
-                        <input type="number" id="countRequested" placeholder="Target"
-                               class="w-full bg-[#0b0f1a] border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none text-white">
-                        <input type="date" id="dateEntered"
-                               class="w-full bg-[#0b0f1a] border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none text-white">
-                        <input type="number" id="firstLogin" placeholder="Initial Kept"
-                               class="w-full bg-[#0b0f1a] border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none text-white">
-                        <select id="sessionType"
-                                class="w-full bg-[#0b0f1a] border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none text-white">
-                            <option value="Connect">Connect</option>
-                            <option value="Reporting">Reporting</option>
-                        </select>
-                        <button onclick="addNewRow()"
-                                class="w-full bg-green-600 py-3 rounded-xl text-xs font-black uppercase hover:bg-green-700 transition">
-                            Save Request
-                        </button>
-                    </div>
-                </div>
+                <!-- header row -->
+                <div class="flex flex-wrap justify-between items-start gap-6 mb-8">
+                    <div>
+                        <h2 class="text-2xl font-black uppercase tracking-tight" style="color:var(--text-pri);">Global <span style="color:var(--green);">Count</span></h2>
+                        <p class="text-xs mt-1 font-medium" style="color:var(--text-mute);">15-Day Cycle Performance Tracking</p>
 
-                <div id="adminAddColumn">
-                    <h3 class="text-xs font-black text-indigo-400 uppercase tracking-widest border-b border-slate-800 pb-2 pt-4">Add Check Date</h3>
-                    <div class="space-y-4 pt-4">
-                        <input type="date" id="weekSingleDate"
-                               class="w-full bg-[#0b0f1a] border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none text-white">
-                        <button onclick="addNewWeek()"
-                                class="w-full bg-slate-700 py-2 rounded-lg text-xs font-black uppercase hover:bg-slate-600">
-                            + Add Column
-                        </button>
-                        <div id="weekManageList" class="space-y-2"></div>
-                    </div>
-                </div>
-
-                <div id="viewerNoticeReqId" style="display: none;">
-                    <div class="bg-indigo-500/10 border border-indigo-500/20 p-4 rounded-xl">
-                        <p class="text-indigo-400 text-[10px] font-black uppercase tracking-widest">Viewer Mode</p>
-                        <p class="text-slate-500 text-[10px] mt-1 leading-relaxed">
-                            You have read-only access. You can search, refresh, and download data, but modifications are disabled.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main content -->
-            <div class="flex-1 p-8 bg-[#0b0f1a] overflow-hidden flex flex-col">
-                <div class="flex justify-between items-center mb-8">
-                    <div class="flex flex-col">
-                        <h2 class="text-3xl font-black uppercase text-white">
-                            Request <span class="text-indigo-500">IDs</span>
-                        </h2>
-                        <span id="roleBadge"
-                              class="text-[9px] font-black uppercase tracking-widest bg-slate-800 px-2 py-1 rounded w-fit mt-1 text-slate-400">
-                            Loading...
-                        </span>
-                    </div>
-                    <div class="flex gap-4 items-end">
-                        <div class="flex flex-col gap-2">
-                            <button onclick="downloadCSVReqId()"
-                                    class="bg-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-700 transition">
-                                <i class="fas fa-file-csv mr-2"></i>Download CSV
-                            </button>
-                            <button onclick="loadDataV2()"
-                                    class="bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 hover:bg-slate-700 transition text-white">
-                                <i class="fas fa-sync-alt"></i>
+                        <div class="mt-5 flex flex-wrap items-center gap-3 px-4 py-2.5 rounded-xl border" style="background:var(--bg-surface);border-color:var(--border);">
+                            <input type="date" id="v1_targetDate" onchange="v1_dateChangedManually()"
+                                class="bg-transparent font-bold outline-none cursor-pointer text-sm mono" style="color:var(--green);">
+                            <div class="h-4 w-px" style="background:var(--border);"></div>
+                            <select id="v1_historyList" onchange="v1_historyChanged()"
+                                class="inp text-xs font-semibold rounded-lg px-3 py-1.5 cursor-pointer" style="background:var(--bg-panel);">
+                                <option value="">— Select History —</option>
+                            </select>
+                            <button onclick="v1_fetchData()"
+                                class="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg transition"
+                                style="background:rgba(59,130,246,.1);color:var(--accent-hi);border:1px solid rgba(59,130,246,.2);">
+                                <i class="fas fa-sync-alt text-[10px]"></i> Refresh
                             </button>
                         </div>
-                        <input type="text" id="searchInput" oninput="renderTableV2()"
-                               placeholder="Search Multi-IDs (e.g. 101, 102) or Provider..."
-                               class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm outline-none w-96 focus:border-indigo-500 text-white">
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 admin-only" style="align-self:flex-end;">
+                        <button onclick="v1_manualSave(true)" class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider text-white transition hover:opacity-85" style="background:#2563eb;"><i class="fas fa-plus-circle"></i>Save New</button>
+                        <button onclick="v1_manualSave(false)" class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider text-white transition hover:opacity-85" style="background:var(--green-dim);"><i class="fas fa-cloud-upload-alt"></i>Update</button>
+                        <button onclick="v1_resetTable()" class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition hover:opacity-85" style="background:var(--bg-surface);border:1px solid var(--border);color:var(--text-sec);"><i class="fas fa-eraser"></i>Clear</button>
+                        <button onclick="v1_exportCSV()" class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider text-white transition hover:opacity-85" style="background:#b45309;"><i class="fas fa-file-csv"></i>CSV</button>
                     </div>
                 </div>
 
-                <!-- Horizontal Scrolling Table - preserved exactly -->
-                <div class="sticky-wrapper flex-1 bg-[#111827] border border-slate-800">
-                    <table class="w-full text-left text-xs sticky-table" id="reqid-table">
-                        <thead class="bg-slate-900/80 text-slate-500 font-black uppercase sticky top-0 z-40">
-                            <tr id="headerRow"></tr>
-                        </thead>
-                        <tbody id="tableBodyV2" class="divide-y divide-slate-800/50"></tbody>
-                    </table>
+                <!-- summary cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="stat-card panel rounded-2xl p-5">
+                        <p class="sec-label mb-2">iMacros</p>
+                        <p id="v1_sum-imacros" class="text-3xl font-black mono" style="color:var(--text-pri);">0</p>
+                        <div id="v1_trend-imacros" class="text-[10px] font-bold mt-2" style="color:var(--text-mute);">--</div>
+                    </div>
+                    <div class="stat-card panel rounded-2xl p-5">
+                        <p class="sec-label mb-2">Selenium</p>
+                        <p id="v1_sum-selenium" class="text-3xl font-black mono" style="color:var(--text-pri);">0</p>
+                        <div id="v1_trend-selenium" class="text-[10px] font-bold mt-2" style="color:var(--text-mute);">--</div>
+                    </div>
+                    <div class="stat-card panel rounded-2xl p-5">
+                        <p class="sec-label mb-2">WebAutomate</p>
+                        <p id="v1_sum-web" class="text-3xl font-black mono" style="color:var(--text-pri);">0</p>
+                        <div id="v1_trend-web" class="text-[10px] font-bold mt-2" style="color:var(--text-mute);">--</div>
+                    </div>
+                    <div class="stat-card rounded-2xl p-5 glow-blue" style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);">
+                        <p class="sec-label mb-2" style="color:var(--accent);">Grand Total</p>
+                        <p id="v1_sum-grand" class="text-3xl font-black mono" style="color:var(--text-pri);">0</p>
+                        <div id="v1_trend-grand" class="text-[10px] font-bold mt-2" style="color:var(--text-mute);">--</div>
+                    </div>
                 </div>
-            </div>
-        </section>
-    </div><!-- end page-reqid -->
 
-
-    <!-- ============================================
-         PAGE 3: ProgressSeedsByProfileListes
-    ============================================= -->
-    <div id="page-seeds" class="page-section">
-        <div class="h-screen overflow-y-auto p-8 bg-[#0b0f1a]">
-
-            <!-- Header -->
-            <div class="flex flex-wrap justify-between items-center mb-8 gap-6">
-                <div>
-                    <h2 class="text-3xl font-black uppercase text-green-500">
-                        Tracking <span class="text-white">Seeds</span>
-                    </h2>
-                    <p class="text-slate-500 text-sm">Session extraction and comparison engine</p>
-                </div>
-                <div class="flex flex-wrap gap-3 items-center">
-                    <select id="entitySelector"
-                            class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none min-w-[180px] focus:ring-2 ring-green-500 text-white">
-                        <option value="">Select Entity...</option>
-                    </select>
-                    <button onclick="toggleModal('mgmtModal', true)"
-                            class="admin-only bg-slate-800 border border-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold uppercase transition hover:bg-slate-700 text-white">
-                        Database Manager
-                    </button>
-                    <input type="file" id="csvFile" accept=".csv" class="hidden">
-                    <label for="csvFile"
-                           class="bg-green-600 px-6 py-2.5 rounded-xl cursor-pointer text-xs font-black uppercase tracking-tighter hover:bg-green-700 transition text-white">
-                        Import Status File
-                    </label>
-                    <button onclick="loadFromCloudSeeds()"
-                            class="bg-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold uppercase hover:bg-slate-600 transition text-white">
-                        <i class="fas fa-sync-alt mr-2"></i>Refresh
-                    </button>
-                    <button onclick="clearSeedsUI()"
-                            class="bg-red-600/20 text-red-500 border border-red-500/30 px-4 py-2.5 rounded-xl text-xs font-bold uppercase hover:bg-red-600 hover:text-white transition">
-                        Clear
-                    </button>
-                    <button onclick="runComparison()" id="compareBtn"
-                            class="bg-indigo-600 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-tighter hidden hover:bg-indigo-700 transition shadow-lg shadow-indigo-500/20 text-white">
-                        Analyze Comparison
-                    </button>
-                </div>
-            </div>
-
-            <!-- Stat Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div class="bg-[#111827] p-5 rounded-2xl border border-slate-800">
-                    <p class="text-slate-500 text-[10px] font-black uppercase mb-1">Profiles In File</p>
-                    <p id="statTotal" class="text-4xl font-black text-white">0</p>
-                </div>
-                <div class="bg-[#111827] p-5 rounded-2xl border border-l-4 border-l-green-500 border-slate-800">
-                    <p class="text-slate-500 text-[10px] font-black uppercase mb-1">Survival Rate</p>
-                    <p id="statSuccess" class="text-4xl font-black text-green-400">0%</p>
-                </div>
-                <div class="bg-[#111827] p-5 rounded-2xl border border-slate-800 md:col-span-2">
-                    <p class="text-slate-500 text-[10px] font-black uppercase mb-3">Status Breakdown</p>
-                    <div id="counterGrid" class="grid grid-cols-2 gap-x-8 gap-y-1 max-h-32 overflow-y-auto"></div>
-                </div>
-            </div>
-
-            <!-- Comparison Section -->
-            <div id="comparisonSection" class="hidden mb-12">
-                <h3 class="text-lg font-black text-indigo-400 mb-4 uppercase tracking-widest flex items-center gap-2">
-                    <span class="bg-indigo-500 w-1.5 h-6 rounded-full"></span> Live Comparison Analysis
-                </h3>
-                <div class="bg-[#111827] border border-indigo-500/30 rounded-2xl overflow-hidden shadow-2xl">
-                    <table class="w-full text-left text-xs" id="compTable">
-                        <thead class="bg-slate-900/80 text-slate-500 uppercase font-black">
-                            <tr>
-                                <th class="p-4">Session Name</th>
-                                <th class="p-4 text-center">DB Target</th>
-                                <th class="p-4 text-center text-green-400 bg-green-900/10">Actual Active</th>
-                                <th class="p-4 text-center text-red-400">Loss</th>
-                                <th class="p-4 text-right">Survival %</th>
+                <!-- table -->
+                <div class="panel rounded-2xl overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr style="background:var(--bg-input);border-bottom:1px solid var(--border);">
+                                <th class="px-5 py-3.5 sec-label w-1/5">Entity</th>
+                                <th class="px-5 py-3.5 sec-label w-1/5">iMacros</th>
+                                <th class="px-5 py-3.5 sec-label w-1/5">Selenium</th>
+                                <th class="px-5 py-3.5 sec-label w-1/5">WebAutomate</th>
+                                <th class="px-5 py-3.5 sec-label w-1/5 text-right" style="color:var(--indigo);">Total</th>
                             </tr>
                         </thead>
-                        <tbody id="comparisonBody" class="divide-y divide-slate-800"></tbody>
+                        <tbody id="v1_countBody" class="divide-y" style="border-color:var(--border);"></tbody>
                     </table>
-                    <div class="p-4 border-t border-slate-800 bg-slate-900/20 flex justify-end gap-3">
-                        <button onclick="copyTableToClipboard('compTable')"
-                                class="text-[10px] font-bold uppercase text-slate-400 hover:text-white">
-                            Copy Result
-                        </button>
-                        <button onclick="saveComparisonResult()" id="saveResultBtn"
-                                class="admin-only bg-blue-600 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-lg shadow-blue-500/20 text-white">
-                            Save To History
-                        </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════
+             VIEW 2 — Request IDs
+        ════════════════════════════════ -->
+        <div id="view-v2" class="view overflow-hidden">
+            <div class="flex h-full overflow-hidden">
+
+                <!-- left sidebar v2 -->
+                <div class="w-64 flex-shrink-0 flex flex-col border-r overflow-y-auto p-5 gap-6" style="background:var(--bg-panel);border-color:var(--border);">
+
+                    <div id="v2_adminNewEntry">
+                        <p class="sec-label mb-4" style="color:var(--green);">New Entry</p>
+                        <div class="space-y-2.5">
+                            <input type="text"   id="v2_reqId"          placeholder="Req ID"       class="inp w-full rounded-xl px-3 py-2 text-xs">
+                            <input type="text"   id="v2_provider"       placeholder="Provider"     class="inp w-full rounded-xl px-3 py-2 text-xs">
+                            <input type="number" id="v2_countRequested" placeholder="Target"       class="inp w-full rounded-xl px-3 py-2 text-xs">
+                            <input type="date"   id="v2_dateEntered"                               class="inp w-full rounded-xl px-3 py-2 text-xs">
+                            <input type="number" id="v2_firstLogin"     placeholder="Initial Kept" class="inp w-full rounded-xl px-3 py-2 text-xs">
+                            <select id="v2_sessionType" class="inp w-full rounded-xl px-3 py-2 text-xs">
+                                <option value="Connect">Connect</option>
+                                <option value="Reporting">Reporting</option>
+                            </select>
+                            <button onclick="v2_addNewRow()" class="w-full py-2 rounded-xl text-xs font-black uppercase text-white transition hover:opacity-85" style="background:var(--green-dim);">Save Request</button>
+                        </div>
+                    </div>
+
+                    <div id="v2_adminAddColumn">
+                        <p class="sec-label mb-4" style="color:var(--indigo);">Add Check Date</p>
+                        <div class="space-y-2.5">
+                            <input type="date" id="v2_weekSingleDate" class="inp w-full rounded-xl px-3 py-2 text-xs">
+                            <button onclick="v2_addNewWeek()" class="w-full py-2 rounded-xl text-xs font-bold transition hover:opacity-80" style="background:var(--bg-surface);border:1px solid var(--border);color:var(--text-sec);">+ Add Column</button>
+                            <div id="v2_weekManageList" class="space-y-1.5 mt-1"></div>
+                        </div>
+                    </div>
+
+                    <div id="v2_viewerNotice" style="display:none;">
+                        <div class="rounded-xl p-4" style="background:rgba(129,140,248,.07);border:1px solid rgba(129,140,248,.15);">
+                            <p class="text-[10px] font-black uppercase tracking-widest mb-1" style="color:var(--indigo);">Viewer Mode</p>
+                            <p class="text-[10px] leading-relaxed" style="color:var(--text-mute);">Read-only. Search, refresh, and export only.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- main v2 -->
+                <div class="flex-1 flex flex-col p-6 overflow-hidden gap-5">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div>
+                            <h2 class="text-2xl font-black uppercase tracking-tight" style="color:var(--text-pri);">Request <span style="color:var(--indigo);">IDs</span></h2>
+                            <span id="v2_roleBadge" class="badge mt-1" style="background:var(--bg-surface);color:var(--text-mute);border:1px solid var(--border);">Loading...</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input type="text" id="v2_searchInput" oninput="v2_renderTable()"
+                                placeholder="Search IDs (e.g. 101, 102) or Provider..."
+                                class="inp rounded-xl px-4 py-2 text-xs w-72">
+                            <button onclick="v2_downloadCSV()" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[10px] font-black uppercase text-white transition hover:opacity-85" style="background:#047857;"><i class="fas fa-file-csv"></i>CSV</button>
+                            <button onclick="v2_loadData()" class="w-8 h-8 rounded-xl flex items-center justify-center transition hover:opacity-80" style="background:var(--bg-surface);border:1px solid var(--border);color:var(--text-sec);"><i class="fas fa-sync-alt text-xs"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-auto rounded-xl border" style="background:var(--bg-panel);border-color:var(--border);">
+                        <table class="w-full text-left text-xs sticky-tbl" id="v2_mainTable">
+                            <thead class="sticky top-0 z-40" style="background:var(--bg-input);">
+                                <tr id="v2_headerRow" class="text-[10px] font-black uppercase" style="color:var(--text-mute);"></tr>
+                            </thead>
+                            <tbody id="v2_tableBody" class="divide-y" style="border-color:var(--border);"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Seeds Main Table -->
-            <div class="bg-[#111827] rounded-3xl border border-slate-800 overflow-hidden shadow-2xl">
-                <div class="p-4 border-b border-slate-800 flex flex-wrap gap-4 items-center bg-slate-900/30">
-                    <input type="text" id="idSearch" oninput="filterSeedsTable()"
-                           placeholder="Filter profiles (ID, Log, Status)..."
-                           class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm outline-none focus:border-green-500 text-white">
-                    <select id="statusFilter" onchange="filterSeedsTable()"
-                            class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm outline-none text-white">
-                        <option value="All">All Statuses</option>
-                    </select>
-                    <button onclick="downloadTableAsCSV('mainSeedsTable', 'Filtered_Status')"
-                            class="bg-slate-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase text-white">
-                        CSV Export
-                    </button>
-                </div>
-                <div class="table-container">
-                    <table class="w-full text-left text-[11px] whitespace-nowrap" id="mainSeedsTable">
-                        <thead id="tableHead" class="bg-slate-900 sticky top-0 z-10"></thead>
-                        <tbody id="tableBodySeeds" class="divide-y divide-slate-800/50"></tbody>
-                    </table>
-                </div>
-            </div>
+        <!-- ════════════════════════════════
+             VIEW 3 — Tracking Seeds
+        ════════════════════════════════ -->
+        <div id="view-v3" class="view overflow-y-auto">
+            <div class="p-8 w-full">
 
-            <!-- History Section -->
-            <div class="mt-12 bg-[#111827] p-8 rounded-3xl border border-slate-800 shadow-2xl">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-lg font-black text-green-500 uppercase tracking-widest flex items-center gap-2">
-                        <span class="bg-green-600 w-1.5 h-6 rounded-full"></span> Saved Comparisons History
-                    </h3>
-                    <div class="flex gap-4">
-                        <input type="date" id="historyDateFilter" onchange="renderSeedsHistoryTable()"
-                               class="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-[11px] outline-none focus:border-indigo-500 text-white">
-                        <select id="historyEntityFilter" onchange="renderSeedsHistoryTable()"
-                                class="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-[11px] outline-none focus:border-indigo-500 text-white">
-                            <option value="">Filter by Entity...</option>
+                <!-- header -->
+                <div class="flex flex-wrap justify-between items-start gap-5 mb-8">
+                    <div>
+                        <h2 class="text-2xl font-black uppercase tracking-tight"><span style="color:var(--green);">Tracking</span> <span style="color:var(--text-pri);">Seeds</span></h2>
+                        <p class="text-xs mt-1 font-medium" style="color:var(--text-mute);">Session extraction and comparison engine</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2.5 items-center">
+                        <select id="v3_entitySelector" class="inp rounded-xl px-4 py-2 text-xs min-w-[160px]" style="background:var(--bg-panel);">
+                            <option value="">Select Entity...</option>
                         </select>
+                        <button onclick="toggleModal('v3_mgmtModal', true)"
+                            class="admin-only items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition hover:opacity-80"
+                            style="background:var(--bg-surface);border:1px solid var(--border);color:var(--text-sec);">
+                            <i class="fas fa-database mr-1 text-[10px]"></i>DB Manager
+                        </button>
+
+                        <label for="v3_csvFile" class="flex items-center gap-1.5 px-4 py-2 rounded-xl cursor-pointer text-xs font-black uppercase text-white transition hover:opacity-85" style="background:var(--green-dim);">
+                            <i class="fas fa-upload text-[10px]"></i>Import File
+                        </label>
+                        <input type="file" id="v3_csvFile" accept=".csv" class="hidden">
+
+                        <button onclick="v3_loadFromCloud()" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition hover:opacity-80" style="background:var(--bg-surface);border:1px solid var(--border);color:var(--text-sec);"><i class="fas fa-sync-alt text-[10px]"></i>Refresh</button>
+                        <button onclick="v3_clearUI()" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition hover:opacity-80" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;">
+                            <i class="fas fa-times text-[10px]"></i>Clear
+                        </button>
+                        <button onclick="v3_runComparison()" id="v3_compareBtn"
+                            class="hidden items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-black uppercase text-white transition hover:opacity-85"
+                            style="background:var(--accent);">
+                            <i class="fas fa-flask text-[10px]"></i>Analyze
+                        </button>
                     </div>
                 </div>
-                <div class="overflow-hidden rounded-2xl border border-slate-800">
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-slate-900 text-slate-500 uppercase font-black">
-                            <tr>
-                                <th class="p-4">Session_Lists</th>
-                                <th class="p-4 text-center">Target</th>
-                                <th class="p-4 text-center text-green-400">Active File</th>
-                                <th class="p-4 text-center text-red-400">Blocked File (Loss)</th>
-                                <th class="p-4 text-right">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historyTableBody" class="divide-y divide-slate-800"></tbody>
-                    </table>
+
+                <!-- upload hint when empty -->
+                <div id="v3_uploadHint" class="upload-zone mb-8">
+                    <i class="fas fa-file-csv text-2xl mb-3" style="color:var(--text-mute);"></i>
+                    <p class="text-sm font-semibold" style="color:var(--text-sec);">Import a status CSV to begin</p>
+                    <p class="text-xs mt-1" style="color:var(--text-mute);">Semicolon-delimited · auto-detects sessions · any size</p>
                 </div>
+
+                <!-- stats grid -->
+                <div id="v3_statsArea" class="hidden">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div class="stat-card panel rounded-2xl p-5">
+                            <p class="sec-label mb-2">Profiles in File</p>
+                            <p id="v3_statTotal" class="text-3xl font-black mono" style="color:var(--text-pri);">0</p>
+                        </div>
+                        <div class="stat-card rounded-2xl p-5 glow-green" style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.2);">
+                            <p class="sec-label mb-2" style="color:var(--green);">Survival Rate</p>
+                            <p id="v3_statSuccess" class="text-3xl font-black mono text-green-400">0%</p>
+                        </div>
+                        <div class="panel rounded-2xl p-5 md:col-span-2">
+                            <p class="sec-label mb-3">Status Breakdown</p>
+                            <div id="v3_counterGrid" class="grid grid-cols-2 gap-x-8 gap-y-1 max-h-28 overflow-y-auto"></div>
+                        </div>
+                    </div>
+
+                    <!-- progress indicator while loading -->
+                    <div id="v3_loadBar" class="hidden mb-4">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="sec-label">Processing file...</span>
+                            <span id="v3_loadPct" class="sec-label mono">0%</span>
+                        </div>
+                        <div class="pbar-track"><div id="v3_loadFill" class="pbar-fill" style="width:0%;background:var(--green);"></div></div>
+                    </div>
+
+                    <!-- comparison section -->
+                    <div id="v3_comparisonSection" class="hidden mb-10">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="w-1 h-5 rounded-full" style="background:var(--accent);"></span>
+                            <h3 class="text-sm font-black uppercase tracking-widest" style="color:var(--accent);">Live Comparison Analysis</h3>
+                        </div>
+                        <div class="panel rounded-2xl overflow-hidden">
+                            <table class="w-full text-left text-xs" id="v3_compTable">
+                                <thead style="background:var(--bg-input);border-bottom:1px solid var(--border);">
+                                    <tr class="sec-label">
+                                        <th class="px-5 py-3">Session Name</th>
+                                        <th class="px-5 py-3 text-center">DB Target</th>
+                                        <th class="px-5 py-3 text-center" style="color:var(--green);">Actual Active</th>
+                                        <th class="px-5 py-3 text-center" style="color:var(--red);">Loss</th>
+                                        <th class="px-5 py-3 text-right">Survival %</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="v3_comparisonBody" class="divide-y" style="border-color:var(--border);"></tbody>
+                            </table>
+                            <div class="px-5 py-3 border-t flex justify-end gap-3" style="border-color:var(--border);background:var(--bg-input);">
+                                <button onclick="v3_copyTable('v3_compTable')" class="text-[10px] font-bold uppercase transition hover:opacity-80" style="color:var(--text-mute);">Copy Result</button>
+                                <button onclick="v3_saveComparisonResult()" id="v3_saveResultBtn"
+                                    class="admin-only items-center gap-1.5 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase text-white transition hover:opacity-85"
+                                    style="background:#1d4ed8;">
+                                    <i class="fas fa-save mr-1"></i>Save to History
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- seeds table -->
+                    <div class="panel rounded-2xl overflow-hidden mb-10">
+                        <div class="px-5 py-3.5 border-b flex flex-wrap gap-3 items-center" style="border-color:var(--border);background:var(--bg-input);">
+                            <input type="text" id="v3_idSearch" oninput="v3_filterTable()"
+                                placeholder="Filter profiles by ID, Log, Status..."
+                                class="inp flex-1 min-w-[200px] rounded-xl px-4 py-2 text-xs">
+                            <select id="v3_statusFilter" onchange="v3_filterTable()" class="inp rounded-xl px-4 py-2 text-xs" style="background:var(--bg-panel);">
+                                <option value="All">All Statuses</option>
+                            </select>
+                            <button onclick="v3_downloadTableCSV('v3_mainTable','Filtered_Status')"
+                                class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition hover:opacity-80"
+                                style="background:var(--bg-surface);border:1px solid var(--border);color:var(--text-sec);">
+                                <i class="fas fa-file-csv text-[10px]"></i>Export
+                            </button>
+                            <span id="v3_rowCount" class="sec-label mono"></span>
+                        </div>
+                        <div class="tbl-scroll">
+                            <table class="w-full text-left text-[11px] whitespace-nowrap" id="v3_mainTable">
+                                <thead id="v3_tableHead" class="sticky top-0 z-10" style="background:var(--bg-panel);"></thead>
+                                <tbody id="v3_tableBodySeeds" class="divide-y" style="border-color:var(--border);"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- history -->
+                <div class="panel rounded-2xl p-6">
+                    <div class="flex flex-wrap justify-between items-center gap-4 mb-5">
+                        <div class="flex items-center gap-2">
+                            <span class="w-1 h-5 rounded-full" style="background:var(--green);"></span>
+                            <h3 class="text-sm font-black uppercase tracking-widest" style="color:var(--green);">Saved Comparisons</h3>
+                        </div>
+                        <div class="flex gap-3 flex-wrap">
+                            <input type="date" id="v3_historyDateFilter" onchange="v3_renderHistoryTable()"
+                                class="inp rounded-xl px-4 py-2 text-xs">
+                            <select id="v3_historyEntityFilter" onchange="v3_renderHistoryTable()"
+                                class="inp rounded-xl px-4 py-2 text-xs" style="background:var(--bg-panel);">
+                                <option value="">Filter by Entity...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="overflow-hidden rounded-xl border" style="border-color:var(--border);">
+                        <table class="w-full text-left text-xs">
+                            <thead style="background:var(--bg-input);border-bottom:1px solid var(--border);">
+                                <tr class="sec-label">
+                                    <th class="px-5 py-3">Session List</th>
+                                    <th class="px-5 py-3 text-center">Target</th>
+                                    <th class="px-5 py-3 text-center" style="color:var(--green);">Active File</th>
+                                    <th class="px-5 py-3 text-center" style="color:var(--red);">Blocked (Loss)</th>
+                                    <th class="px-5 py-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="v3_historyTableBody" class="divide-y" style="border-color:var(--border);"></tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
-
         </div>
-    </div><!-- end page-seeds -->
 
-</div><!-- end mainContent -->
+    </div><!-- /content -->
+</div><!-- /layout -->
 
+<!-- toast v1 -->
+<div id="v1_saveMsg" class="toast fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl text-white text-xs font-bold shadow-2xl" style="background:#16a34a;border:1px solid rgba(255,255,255,.1);">
+    <i class="fas fa-check-circle"></i>
+    <span>Synced to Google Sheets</span>
+</div>
 
-<!-- =============================================
-     MODALS (Seeds Page)
-============================================= -->
-<div id="mgmtModal" class="modal">
-    <div class="bg-[#111827] w-full max-w-2xl p-8 rounded-3xl border border-slate-700 mx-4 shadow-2xl">
+<!-- ══════════════════════════════════════
+     MODALS
+════════════════════════════════════════ -->
+
+<!-- DB Manager -->
+<div id="v3_mgmtModal" class="modal">
+    <div class="panel w-full max-w-xl rounded-2xl p-8 mx-4 shadow-2xl" style="max-height:90vh;overflow-y:auto;">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-black uppercase text-white">Database Manager</h2>
-            <button onclick="toggleModal('mgmtModal', false)" class="text-slate-500 hover:text-white text-3xl">&times;</button>
+            <h2 class="text-lg font-black uppercase tracking-tight" style="color:var(--text-pri);">Database Manager</h2>
+            <button onclick="toggleModal('v3_mgmtModal', false)" class="w-8 h-8 rounded-lg flex items-center justify-center transition hover:opacity-80 text-lg" style="color:var(--text-mute);background:var(--bg-surface);">&times;</button>
         </div>
-        <div class="mb-6">
-            <label class="text-[10px] font-black text-slate-500 uppercase mb-2 block">Manage Entity</label>
+        <div class="mb-5">
+            <label class="sec-label mb-2 block">Manage Entity</label>
             <div class="flex gap-2">
-                <select id="mgmtEntitySelect" onchange="renderSeedsDbTable()"
-                        class="flex-1 bg-[#0b0f1a] border border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-indigo-500 text-white"></select>
-                <input type="text" id="newEntityName" placeholder="New Entity Name..."
-                       class="bg-[#0b0f1a] border border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-green-500 text-xs text-white">
+                <select id="v3_mgmtEntitySelect" onchange="v3_renderDbTable()" class="inp flex-1 rounded-xl px-3 py-2 text-sm" style="background:var(--bg-input);"></select>
+                <input type="text" id="v3_newEntityName" placeholder="New entity..." class="inp rounded-xl px-3 py-2 text-xs" style="width:140px;background:var(--bg-input);">
             </div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 bg-[#0b0f1a] p-6 rounded-2xl border border-slate-800">
-            <input type="text" id="newSession" placeholder="Session Name"
-                   class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 outline-none text-sm text-white">
-            <input type="number" id="newCount" placeholder="Target Count"
-                   class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 outline-none text-sm text-white">
-            <button onclick="addSessionData()"
-                    class="md:col-span-2 bg-indigo-600 py-3 rounded-xl font-black uppercase transition hover:bg-indigo-700 text-white">
-                Add/Update Session
-            </button>
+        <div class="grid grid-cols-2 gap-3 mb-6 p-4 rounded-xl border" style="background:var(--bg-input);border-color:var(--border);">
+            <input type="text"   id="v3_newSession" placeholder="Session Name"  class="inp rounded-lg px-3 py-2 text-sm" style="background:var(--bg-panel);">
+            <input type="number" id="v3_newCount"   placeholder="Target Count"  class="inp rounded-lg px-3 py-2 text-sm" style="background:var(--bg-panel);">
+            <button onclick="v3_addSessionData()" class="col-span-2 py-2.5 rounded-xl text-xs font-black uppercase text-white transition hover:opacity-85" style="background:var(--accent);">Add / Update Session</button>
         </div>
-        <div class="max-h-64 overflow-auto rounded-xl border border-slate-800 bg-[#0b0f1a]">
+        <div class="max-h-56 overflow-auto rounded-xl border" style="border-color:var(--border);background:var(--bg-input);">
             <table class="w-full text-left text-xs">
-                <thead class="bg-slate-900 font-black text-slate-500 uppercase sticky top-0">
+                <thead class="sticky top-0 sec-label" style="background:var(--bg-panel);">
                     <tr>
-                        <th class="p-4">Session</th>
-                        <th class="p-4 text-center">Target</th>
-                        <th class="p-4 text-right">Actions</th>
+                        <th class="px-4 py-3">Session</th>
+                        <th class="px-4 py-3 text-center">Target</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody id="dbTableBody" class="divide-y divide-slate-800"></tbody>
+                <tbody id="v3_dbTableBody" class="divide-y" style="border-color:var(--border);"></tbody>
             </table>
         </div>
     </div>
 </div>
 
-<div id="detailModal" class="modal">
-    <div class="bg-[#111827] w-full max-w-4xl p-8 rounded-3xl shadow-2xl border border-slate-700 mx-4">
+<!-- Detail Modal -->
+<div id="v3_detailModal" class="modal">
+    <div class="panel w-full max-w-3xl rounded-2xl p-8 mx-4 shadow-2xl">
         <div class="flex justify-between items-center mb-6">
             <div>
-                <h2 class="text-2xl font-black uppercase text-white" id="detailModalTitle">Session Details</h2>
-                <p class="text-slate-500 text-sm font-mono" id="detailModalSubtitle"></p>
+                <h2 class="text-lg font-black uppercase" id="v3_detailModalTitle" style="color:var(--text-pri);">Session Details</h2>
+                <p class="text-xs font-mono mt-0.5" id="v3_detailModalSubtitle" style="color:var(--text-mute);"></p>
             </div>
-            <button onclick="toggleModal('detailModal', false)" class="text-slate-500 hover:text-white text-3xl">&times;</button>
+            <button onclick="toggleModal('v3_detailModal', false)" class="w-8 h-8 rounded-lg flex items-center justify-center text-lg transition hover:opacity-80" style="color:var(--text-mute);background:var(--bg-surface);">&times;</button>
         </div>
-        <div class="max-h-[60vh] overflow-auto rounded-2xl border border-slate-800 bg-[#0b0f1a]">
+        <div class="max-h-[55vh] overflow-auto rounded-xl border" style="border-color:var(--border);background:var(--bg-input);">
             <table class="w-full text-left text-xs">
-                <thead class="bg-slate-900 font-black text-indigo-400 uppercase tracking-widest sticky top-0">
+                <thead class="sticky top-0 sec-label" style="background:var(--bg-panel);border-bottom:1px solid var(--border);">
                     <tr>
-                        <th class="p-4">Date Entered</th>
-                        <th class="p-4">Process ID</th>
-                        <th class="p-4 text-center">Calculation Breakdown</th>
+                        <th class="px-4 py-3">Date</th>
+                        <th class="px-4 py-3">Process ID</th>
+                        <th class="px-4 py-3 text-center">Breakdown</th>
                     </tr>
                 </thead>
-                <tbody id="detailTableBody" class="divide-y divide-slate-800"></tbody>
+                <tbody id="v3_detailTableBody" class="divide-y" style="border-color:var(--border);"></tbody>
             </table>
         </div>
     </div>
 </div>
 
 
-<!-- =============================================
-     UNIFIED JAVASCRIPT
-============================================= -->
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
 <script>
-// ================================================================
-//  SECURITY NOTE:
-//  Passwords are validated server-side via a hashed comparison.
-//  The credential check uses a secure hash to prevent plain-text
-//  exposure in DevTools. Roles are stored in session only.
-// ================================================================
-
-// ================================================================
-//  UNIFIED AUTH SYSTEM
-// ================================================================
-
-// Hashed credentials (SHA-256 hex — NOT plain text in code)
-// admin123 => sha256 hash
-// view123  => sha256 hash
-// These are computed at runtime and compared — never stored as plain strings below.
-const _CREDS = {
-    a: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a', // admin123
-    v: 'a7f5f35426b927411fc9231b56382173'  // used as fallback (md5 placeholder)
-};
-
-// Runtime secure hash function (SHA-256 via SubtleCrypto)
-async function _hashPass(str) {
-    const enc = new TextEncoder().encode(str);
-    const buf = await crypto.subtle.digest('SHA-256', enc);
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-// Stored hashed credentials (computed once at load)
-let _hashedAdmin = null;
-let _hashedViewer = null;
-
-(async function precomputeHashes() {
-    // Pre-hash the expected codes so they're never compared as plain text at login time
-    _hashedAdmin = await _hashPass('admin123');
-    _hashedViewer = await _hashPass('view123');
+// ─── AUTH ────────────────────────────────────────────────────────────
+const AUTH = (() => {
+    const _c = { admin:{raw:'admin123'}, viewer:{raw:'view123'} };
+    function _h(s){ let h=0x811c9dc5; for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*0x01000193)>>>0;} return h.toString(16); }
+    _c.admin.hash  = _h(_c.admin.raw);
+    _c.viewer.hash = _h(_c.viewer.raw);
+    return { check(p,r){ const x=_h(p); if(r==='admin'&&x===_c.admin.hash)return true; if(r==='viewer'&&(x===_c.viewer.hash||p===''))return true; return false; } };
 })();
 
-// ----------------------------------------------------------------
-// Global role state
-// ----------------------------------------------------------------
-let unifiedRole = null; // 'admin' | 'viewer'
+let G_isAdmin=false, G_userRole=null;
 
-async function unifiedLoginAttempt(mode) {
-    const input = document.getElementById('unifiedPass').value;
-    const inputHash = await _hashPass(input);
-
-    let granted = false;
-
-    if (mode === 'admin' && inputHash === _hashedAdmin) {
-        unifiedRole = 'admin';
-        granted = true;
-    } else if (mode === 'viewer') {
-        // Viewer: correct code or empty
-        if (inputHash === _hashedViewer || input === '') {
-            unifiedRole = 'viewer';
-            granted = true;
-        } else {
-            document.getElementById('loginError').classList.remove('hidden');
-            return;
-        }
-    } else {
-        document.getElementById('loginError').classList.remove('hidden');
+function unifiedLogin(role){
+    const el=document.getElementById('authPassCode'), err=document.getElementById('authError'), p=el.value;
+    if(!AUTH.check(p,role)){
+        err.classList.remove('hidden');
+        el.style.borderColor='#ef4444'; el.value='';
+        setTimeout(()=>el.style.borderColor='var(--border)',1500);
         return;
     }
-
-    if (granted) {
-        document.getElementById('loginError').classList.add('hidden');
-        document.getElementById('loginOverlay').style.display = 'none';
-        applyRole();
-        initAllModules();
-    }
+    err.classList.add('hidden'); el.value='';
+    G_userRole=(role==='admin')?'Admin':'Viewer';
+    G_isAdmin=(role==='admin');
+    if(G_isAdmin) document.body.classList.add('is-admin');
+    const badge=document.getElementById('globalRoleBadge');
+    if(G_isAdmin){ badge.textContent='Administrator'; badge.style.cssText='background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);'; }
+    else { badge.textContent='Viewer'; badge.style.cssText='background:rgba(99,102,241,.1);color:#818cf8;border:1px solid rgba(99,102,241,.2);'; }
+    document.getElementById('loginOverlay').style.display='none';
+    v2_setupUI(); v1_fetchData(); v2_loadData(); v3_loadFromCloud();
 }
 
-function applyRole() {
-    if (unifiedRole === 'admin') {
-        document.body.classList.add('is-admin');
-        document.getElementById('sidebarRoleBadge').innerText = 'Administrator';
-        document.getElementById('sidebarRoleBadge').className =
-            'mt-2 inline-block px-2 py-0.5 bg-green-600 text-white rounded font-black uppercase text-[9px]';
-        // ReqID role badge
-        const rb = document.getElementById('roleBadge');
-        if (rb) { rb.innerText = 'Admin'; rb.className = 'text-[9px] font-black uppercase tracking-widest bg-green-800 px-2 py-1 rounded w-fit mt-1 text-green-300'; }
-        // ReqID panels
-        if (document.getElementById('adminNewEntry')) document.getElementById('adminNewEntry').style.display = 'block';
-        if (document.getElementById('adminAddColumn')) document.getElementById('adminAddColumn').style.display = 'block';
-        if (document.getElementById('viewerNoticeReqId')) document.getElementById('viewerNoticeReqId').style.display = 'none';
-    } else {
-        document.getElementById('sidebarRoleBadge').innerText = 'Viewer Mode';
-        document.getElementById('sidebarRoleBadge').className =
-            'mt-2 inline-block px-2 py-0.5 bg-slate-800 border border-slate-700 text-[9px] font-black uppercase text-slate-400 rounded';
-        // ReqID role badge
-        const rb = document.getElementById('roleBadge');
-        if (rb) { rb.innerText = 'Viewer'; }
-        // ReqID panels - hide admin forms
-        if (document.getElementById('adminNewEntry')) document.getElementById('adminNewEntry').style.display = 'none';
-        if (document.getElementById('adminAddColumn')) document.getElementById('adminAddColumn').style.display = 'none';
-        if (document.getElementById('viewerNoticeReqId')) document.getElementById('viewerNoticeReqId').style.display = 'block';
-    }
+function logoutDashboard(){ if(confirm('Log out of Dashboard ECM Pro?')) location.reload(); }
 
-    // Seeds role badge
-    const seedsBadge = document.getElementById('seedsRoleBadge');
-    if (seedsBadge) {
-        seedsBadge.innerText = unifiedRole === 'admin' ? 'Administrator' : 'Viewer Mode';
-    }
+// ─── THEME ───────────────────────────────────────────────────────────
+let isDark=true;
+function toggleTheme(){
+    isDark=!isDark;
+    document.body.classList.toggle('light',!isDark);
+    document.getElementById('themeIcon').className=isDark?'fas fa-moon text-indigo-400 text-xs':'fas fa-sun text-amber-400 text-xs';
+    document.getElementById('themeLabel').textContent=isDark?'Dark':'Light';
 }
 
-function unifiedLogout() {
-    location.reload();
+// ─── NAVIGATION ──────────────────────────────────────────────────────
+function switchView(id){
+    document.querySelectorAll('.view').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(n=>n.classList.remove('active'));
+    document.getElementById('view-'+id).classList.add('active');
+    document.getElementById('nav-'+id).classList.add('active');
 }
 
-// ================================================================
-//  NAVIGATION
-// ================================================================
-function switchPage(page) {
-    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    document.getElementById('page-' + page).classList.add('active');
-    document.getElementById('nav-' + page).classList.add('active');
+// ─── SYNC STATUS ─────────────────────────────────────────────────────
+function setGlobalSync(msg,status){
+    document.getElementById('globalSyncStatus').textContent=msg;
+    const d=document.getElementById('globalSyncDot');
+    const cls={loading:'w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse',online:'w-1.5 h-1.5 rounded-full bg-green-500',error:'w-1.5 h-1.5 rounded-full bg-red-500'};
+    d.className=cls[status]||cls.error;
 }
 
-// ================================================================
-//  DARK / LIGHT MODE TOGGLE
-// ================================================================
-function toggleTheme() {
-    document.body.classList.toggle('light-mode');
-    const isLight = document.body.classList.contains('light-mode');
-    document.getElementById('themeIcon').className = isLight
-        ? 'fas fa-sun text-yellow-400'
-        : 'fas fa-moon text-slate-500';
-    // Fix date picker color in dark mode
-    const datePickers = document.querySelectorAll('input[type="date"]');
-    datePickers.forEach(dp => {
-        dp.style.colorScheme = isLight ? 'light' : 'dark';
-    });
+// ─── MODAL ───────────────────────────────────────────────────────────
+function toggleModal(id,show){ document.getElementById(id).classList.toggle('open',show); }
+
+// ════════════════════════════════════════════════════════════════════
+// VIEW 1 — Global Count
+// ════════════════════════════════════════════════════════════════════
+const API_ENTITIES_URL='https://script.google.com/macros/s/AKfycbxA4UfZ5q9U7fOK23Ww_OUprQDszZ4v2ddq_IMk3gtdt3B9RUqpXB8Jgja9rrIa8Kj7/exec';
+const V1_ENTITIES=["ECM4","ECM7","ECM10"];
+let v1_dataCache={}, v1_debounce=null;
+
+async function v1_fetchData(){
+    setGlobalSync("Syncing…",'loading');
+    try{
+        const r=await fetch(API_ENTITIES_URL), j=await r.json();
+        if(j.status==="success"){
+            v1_dataCache=j.data; v1_rebuildHistory();
+            const dates=Object.keys(v1_dataCache).sort().reverse();
+            if(!document.getElementById('v1_targetDate').value)
+                document.getElementById('v1_targetDate').value=dates.length?dates[0]:new Date().toISOString().split('T')[0];
+            v1_syncInputs(); setGlobalSync("Online",'online');
+        } else setGlobalSync("Data Error",'error');
+    } catch(e){ setGlobalSync("Offline",'error'); v1_syncInputs(); }
 }
 
-// ================================================================
-//  INIT ALL MODULES
-// ================================================================
-function initAllModules() {
-    fetchEntityData();
-    // ReqID loads when page is visited (or init here)
-    loadDataV2();
-    // Seeds loads when page is visited (or init here)
-    loadFromCloudSeeds();
+function v1_rebuildHistory(){
+    const drop=document.getElementById('v1_historyList');
+    drop.innerHTML='<option value="">— Select History —</option>';
+    Object.keys(v1_dataCache).sort().reverse().forEach(d=>drop.insertAdjacentHTML('beforeend',`<option value="${d}">${d}</option>`));
 }
 
-// ================================================================
-//  GLOBAL SYNC STATUS (sidebar)
-// ================================================================
-function updateGlobalSync(msg, status) {
-    document.getElementById('globalSyncStatus').innerText = msg;
-    const dot = document.getElementById('globalSyncDot');
-    if (status === 'loading') dot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-pulse';
-    else if (status === 'online') dot.className = 'w-2 h-2 rounded-full bg-green-500';
-    else if (status === 'error') dot.className = 'w-2 h-2 rounded-full bg-red-500';
-}
+function v1_historyChanged(){ const s=document.getElementById('v1_historyList').value; if(s){document.getElementById('v1_targetDate').value=s;v1_syncInputs();} }
+function v1_dateChangedManually(){ const s=document.getElementById('v1_targetDate').value; document.getElementById('v1_historyList').value=v1_dataCache[s]?s:""; v1_syncInputs(); }
 
-
-// ================================================================
-//  MODULE 1: ENTITY (ProgressSeedsByEntity)
-// ================================================================
-const API_ENTITIES_URL = 'https://script.google.com/macros/s/AKfycbxA4UfZ5q9U7fOK23Ww_OUprQDszZ4v2ddq_IMk3gtdt3B9RUqpXB8Jgja9rrIa8Kj7/exec';
-const ENTITIES = ["ECM4", "ECM7", "ECM10"];
-
-let dataCache = {};
-let entityDebounceTimer = null;
-
-function updateSyncStatus(msg, status) {
-    updateGlobalSync(msg, status);
-}
-
-async function fetchEntityData() {
-    updateSyncStatus("Syncing Cloud...", 'loading');
-    try {
-        const res = await fetch(API_ENTITIES_URL);
-        const json = await res.json();
-        if (json.status === "success") {
-            dataCache = json.data;
-            rebuildHistoryDropdown();
-            const dates = Object.keys(dataCache).sort().reverse();
-            if (!document.getElementById('targetDate').value) {
-                document.getElementById('targetDate').value = dates.length
-                    ? dates[0]
-                    : new Date().toISOString().split('T')[0];
-            }
-            syncInputsWithData();
-            updateSyncStatus("Online", 'online');
-        } else {
-            updateSyncStatus("Data Error", 'error');
-        }
-    } catch (e) {
-        console.error(e);
-        updateSyncStatus("Offline", 'error');
-        syncInputsWithData();
-    }
-}
-
-function rebuildHistoryDropdown() {
-    const drop = document.getElementById('historyList');
-    const dates = Object.keys(dataCache).sort().reverse();
-    drop.innerHTML = '<option value="" class="bg-slate-800 text-slate-400">-- Select History --</option>';
-    dates.forEach(d => {
-        drop.insertAdjacentHTML('beforeend',
-            `<option value="${d}" class="bg-slate-800 text-white font-bold">${d}</option>`);
-    });
-}
-
-function historyChanged() {
-    const selected = document.getElementById('historyList').value;
-    if (selected) {
-        document.getElementById('targetDate').value = selected;
-        syncInputsWithData();
-    }
-}
-
-function dateChangedManually() {
-    const selected = document.getElementById('targetDate').value;
-    document.getElementById('historyList').value = dataCache[selected] ? selected : "";
-    syncInputsWithData();
-}
-
-function syncInputsWithData() {
-    const date = document.getElementById('targetDate').value;
-    const snapshot = dataCache[date] || {};
-    const tbody = document.getElementById('countBody');
-    const isAdminUser = (unifiedRole === 'admin');
-
-    tbody.innerHTML = ENTITIES.map(ent => {
-        const vals = snapshot[ent] || { imacros: 0, selenium: 0, webautomate: 0 };
-        return `
-        <tr data-ent="${ent}" class="hover:bg-slate-800/40 transition-colors">
-            <td class="p-5 font-bold text-slate-300 border-r border-slate-800/50 bg-slate-900/20">${ent}</td>
-            <td class="p-5"><input type="number" class="input-cell" data-col="imacros" value="${vals.imacros}" ${!isAdminUser ? 'disabled' : ''} oninput="triggerAutoSave()"></td>
-            <td class="p-5"><input type="number" class="input-cell" data-col="selenium" value="${vals.selenium}" ${!isAdminUser ? 'disabled' : ''} oninput="triggerAutoSave()"></td>
-            <td class="p-5"><input type="number" class="input-cell" data-col="webautomate" value="${vals.webautomate}" ${!isAdminUser ? 'disabled' : ''} oninput="triggerAutoSave()"></td>
-            <td class="p-5 text-right font-black text-indigo-400 row-total">0</td>
+function v1_syncInputs(){
+    const date=document.getElementById('v1_targetDate').value, snap=v1_dataCache[date]||{}, tbody=document.getElementById('v1_countBody');
+    tbody.innerHTML=V1_ENTITIES.map(ent=>{
+        const v=snap[ent]||{imacros:0,selenium:0,webautomate:0};
+        return `<tr data-ent="${ent}" class="transition-colors" style="border-bottom:1px solid var(--border);">
+            <td class="px-5 py-3.5 text-xs font-bold border-r" style="color:var(--text-sec);border-color:var(--border);background:var(--bg-input);">${ent}</td>
+            <td class="px-5 py-3.5"><input type="number" class="input-cell text-sm" data-col="imacros"    value="${v.imacros}"    ${!G_isAdmin?'disabled':''} oninput="v1_triggerAutoSave()"></td>
+            <td class="px-5 py-3.5"><input type="number" class="input-cell text-sm" data-col="selenium"   value="${v.selenium}"   ${!G_isAdmin?'disabled':''} oninput="v1_triggerAutoSave()"></td>
+            <td class="px-5 py-3.5"><input type="number" class="input-cell text-sm" data-col="webautomate" value="${v.webautomate}" ${!G_isAdmin?'disabled':''} oninput="v1_triggerAutoSave()"></td>
+            <td class="px-5 py-3.5 text-right font-black mono text-sm v1-row-total" style="color:var(--indigo);">0</td>
         </tr>`;
     }).join('');
-
-    recalculateMath();
+    v1_recalc();
 }
 
-function recalculateMath() {
-    const sums = { imacros: 0, selenium: 0, web: 0 };
-    document.querySelectorAll('#countBody tr').forEach(tr => {
-        let rowTotal = 0;
-        tr.querySelectorAll('.input-cell').forEach(input => {
-            const v = parseInt(input.value) || 0;
-            if (input.dataset.col === 'imacros') sums.imacros += v;
-            if (input.dataset.col === 'selenium') sums.selenium += v;
-            if (input.dataset.col === 'webautomate') sums.web += v;
-            rowTotal += v;
+function v1_recalc(){
+    const sums={imacros:0,selenium:0,web:0};
+    document.querySelectorAll('#v1_countBody tr').forEach(tr=>{
+        let rt=0;
+        tr.querySelectorAll('.input-cell').forEach(i=>{
+            const v=parseInt(i.value)||0;
+            if(i.dataset.col==='imacros')   sums.imacros+=v;
+            if(i.dataset.col==='selenium')  sums.selenium+=v;
+            if(i.dataset.col==='webautomate')sums.web+=v;
+            rt+=v;
         });
-        tr.querySelector('.row-total').innerText = rowTotal.toLocaleString();
+        tr.querySelector('.v1-row-total').textContent=rt.toLocaleString();
     });
-    const grand = sums.imacros + sums.selenium + sums.web;
-    document.getElementById('sum-imacros').innerText = sums.imacros.toLocaleString();
-    document.getElementById('sum-selenium').innerText = sums.selenium.toLocaleString();
-    document.getElementById('sum-web').innerText = sums.web.toLocaleString();
-    document.getElementById('sum-grand').innerText = grand.toLocaleString();
-    calculateTrends(sums, grand);
+    const g=sums.imacros+sums.selenium+sums.web;
+    document.getElementById('v1_sum-imacros').textContent=sums.imacros.toLocaleString();
+    document.getElementById('v1_sum-selenium').textContent=sums.selenium.toLocaleString();
+    document.getElementById('v1_sum-web').textContent=sums.web.toLocaleString();
+    document.getElementById('v1_sum-grand').textContent=g.toLocaleString();
+    v1_calcTrends(sums,g);
 }
 
-function calculateTrends(curSums, grand) {
-    const dates = Object.keys(dataCache).sort().reverse();
-    const activeDate = document.getElementById('targetDate').value;
-    const activeIdx = dates.indexOf(activeDate);
-    let prevDate = null;
-    if (activeIdx !== -1 && activeIdx < dates.length - 1) prevDate = dates[activeIdx + 1];
-
-    const executeTrend = (elementId, currentTotal, columnKey) => {
-        const el = document.getElementById(elementId);
-        if (!prevDate) {
-            el.innerText = "--";
-            el.className = "text-[11px] font-bold text-slate-600 mt-2";
-            return;
-        }
-        let prevTotal = 0;
-        if (columnKey === 'grand') {
-            ENTITIES.forEach(e => {
-                const s = dataCache[prevDate][e] || { imacros: 0, selenium: 0, webautomate: 0 };
-                prevTotal += s.imacros + s.selenium + s.webautomate;
-            });
-        } else {
-            ENTITIES.forEach(e => {
-                prevTotal += (dataCache[prevDate][e] ? dataCache[prevDate][e][columnKey] : 0);
-            });
-        }
-        if (prevTotal === 0) {
-            el.innerHTML = '<i class="fas fa-star mr-1"></i> NEW DATA';
-            el.className = "text-[11px] font-black text-green-500 mt-2 tracking-widest";
-            return;
-        }
-        const diff = ((currentTotal - prevTotal) / prevTotal) * 100;
-        const isPositive = diff >= 0;
-        el.innerHTML = `<i class="fas fa-caret-${isPositive ? 'up' : 'down'} mr-1 text-sm"></i> ${Math.abs(diff).toFixed(1)}% vs prev`;
-        el.className = `text-[11px] font-black tracking-wide mt-2 ${isPositive ? 'text-green-500' : 'text-red-500'}`;
+function v1_calcTrends(cur,grand){
+    const dates=Object.keys(v1_dataCache).sort().reverse();
+    const ai=document.getElementById('v1_targetDate').value;
+    const idx=dates.indexOf(ai), prev=idx!==-1&&idx<dates.length-1?dates[idx+1]:null;
+    const doT=(elId,c,col)=>{
+        const el=document.getElementById(elId);
+        if(!prev){el.textContent="--";el.style.color='var(--text-mute)';return;}
+        let p=0;
+        if(col==='grand') V1_ENTITIES.forEach(e=>{const s=v1_dataCache[prev][e]||{imacros:0,selenium:0,webautomate:0};p+=s.imacros+s.selenium+s.webautomate;});
+        else V1_ENTITIES.forEach(e=>{p+=(v1_dataCache[prev][e]?v1_dataCache[prev][e][col]:0);});
+        if(p===0){el.innerHTML='<i class="fas fa-star mr-1 text-[9px]"></i>NEW DATA';el.className='text-[10px] font-black';el.style.color='var(--green)';return;}
+        const d=((c-p)/p)*100, up=d>=0;
+        el.innerHTML=`<i class="fas fa-caret-${up?'up':'down'} mr-1"></i>${Math.abs(d).toFixed(1)}% vs prev`;
+        el.className='text-[10px] font-black'; el.style.color=up?'var(--green)':'var(--red)';
     };
-
-    executeTrend('trend-imacros', curSums.imacros, 'imacros');
-    executeTrend('trend-selenium', curSums.selenium, 'selenium');
-    executeTrend('trend-web', curSums.web, 'webautomate');
-    executeTrend('trend-grand', grand, 'grand');
+    doT('v1_trend-imacros',cur.imacros,'imacros');
+    doT('v1_trend-selenium',cur.selenium,'selenium');
+    doT('v1_trend-web',cur.web,'webautomate');
+    doT('v1_trend-grand',grand,'grand');
 }
 
-function triggerAutoSave() {
-    if (unifiedRole !== 'admin') return;
-    recalculateMath();
-    clearTimeout(entityDebounceTimer);
-    updateSyncStatus("Saving Changes...", 'loading');
-    entityDebounceTimer = setTimeout(() => executeCloudSave(true), 1500);
+function v1_triggerAutoSave(){
+    if(!G_isAdmin)return;
+    v1_recalc();
+    clearTimeout(v1_debounce);
+    setGlobalSync("Saving…",'loading');
+    v1_debounce=setTimeout(()=>v1_execSave(true),1500);
 }
 
-async function executeCloudSave(isSilentSave) {
-    const date = document.getElementById('targetDate').value;
-    if (!date) return;
-    const snapshot = {};
-    document.querySelectorAll('#countBody tr').forEach(tr => {
-        snapshot[tr.dataset.ent] = {
-            imacros: parseInt(tr.querySelector('[data-col="imacros"]').value) || 0,
-            selenium: parseInt(tr.querySelector('[data-col="selenium"]').value) || 0,
-            webautomate: parseInt(tr.querySelector('[data-col="webautomate"]').value) || 0
+async function v1_execSave(silent){
+    const date=document.getElementById('v1_targetDate').value; if(!date)return;
+    const snap={};
+    document.querySelectorAll('#v1_countBody tr').forEach(tr=>{
+        snap[tr.dataset.ent]={
+            imacros:   parseInt(tr.querySelector('[data-col="imacros"]').value)||0,
+            selenium:  parseInt(tr.querySelector('[data-col="selenium"]').value)||0,
+            webautomate:parseInt(tr.querySelector('[data-col="webautomate"]').value)||0
         };
     });
-    dataCache[date] = snapshot;
-    try {
-        const formData = new URLSearchParams();
-        formData.append('data', JSON.stringify(dataCache));
-        await fetch(API_ENTITIES_URL, { method: 'POST', body: formData });
-        updateSyncStatus("Online", 'online');
-        rebuildHistoryDropdown();
-        document.getElementById('historyList').value = date;
-        if (isSilentSave) {
-            const toast = document.getElementById('saveMsg');
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-    } catch (e) {
-        updateSyncStatus("Save Failed", 'error');
+    v1_dataCache[date]=snap;
+    try{
+        const fd=new URLSearchParams(); fd.append('data',JSON.stringify(v1_dataCache));
+        await fetch(API_ENTITIES_URL,{method:'POST',body:fd});
+        setGlobalSync("Online",'online');
+        v1_rebuildHistory(); document.getElementById('v1_historyList').value=date;
+        if(silent){const t=document.getElementById('v1_saveMsg');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+    } catch(e){ setGlobalSync("Save Failed",'error'); }
+}
+
+function v1_manualSave(isNew){
+    const date=document.getElementById('v1_targetDate').value;
+    if(isNew&&v1_dataCache[date]){if(!confirm("Date already exists. Overwrite?"))return;}
+    v1_execSave(false).then(()=>alert("Data secured in Google Sheets."));
+}
+
+function v1_resetTable(){
+    if(!confirm("Clear all metrics for this date?"))return;
+    document.querySelectorAll('.input-cell').forEach(i=>i.value=0);
+    v1_triggerAutoSave();
+}
+
+function v1_exportCSV(){
+    const date=document.getElementById('v1_targetDate').value;
+    let csv="Entity,iMacros,Selenium,WebAutomate\n";
+    document.querySelectorAll('#v1_countBody tr').forEach(tr=>{
+        csv+=`${tr.dataset.ent},${tr.querySelector('[data-col="imacros"]').value},${tr.querySelector('[data-col="selenium"]').value},${tr.querySelector('[data-col="webautomate"]').value}\n`;
+    });
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+    a.download=`ECM_Tracking_${date}.csv`; a.click();
+}
+
+
+// ════════════════════════════════════════════════════════════════════
+// VIEW 2 — Request IDs
+// ════════════════════════════════════════════════════════════════════
+const API_Req_URL="https://script.google.com/macros/s/AKfycbxn6OY4mgdIQeRw8v2vyCBjlvTi80qOsZSEtSL8bbAM0JWLtNw4r9DsIxJTirXMcB0/exec";
+let v2_appData={weeks:[],rows:[]}, v2_editingId=null;
+
+function v2_setupUI(){
+    document.getElementById('v2_roleBadge').textContent=G_userRole;
+    if(G_userRole==='Viewer'){
+        document.getElementById('v2_adminNewEntry').style.display='none';
+        document.getElementById('v2_adminAddColumn').style.display='none';
+        document.getElementById('v2_viewerNotice').style.display='block';
     }
 }
 
-function manualSave(isNewEntry) {
-    const date = document.getElementById('targetDate').value;
-    if (isNewEntry && dataCache[date]) {
-        if (!confirm("This date already exists in history. Overwrite it?")) return;
-    }
-    executeCloudSave(false).then(() => alert("Data successfully secured in Google Sheets."));
+function v2_formatDate(s){
+    if(!s)return""; if(s.includes('T'))s=s.split('T')[0];
+    const [y,m,d]=s.split('-'); return `${m}/${d}/${y}`;
 }
 
-function resetEntityTable() {
-    if (!confirm("Clear all metrics for this date?")) return;
-    document.querySelectorAll('.input-cell').forEach(i => i.value = 0);
-    triggerAutoSave();
+async function v2_loadData(){
+    setGlobalSync("Syncing…",'loading');
+    try{
+        const r=await fetch(API_Req_URL), d=await r.json();
+        if(d) v2_appData=d;
+        v2_monitorStale(); v2_renderTable(); v2_renderWeekManager();
+        setGlobalSync("Online",'online');
+    } catch(e){ setGlobalSync("Offline",'error'); }
 }
 
-function exportEntityCSV() {
-    const date = document.getElementById('targetDate').value;
-    let csv = "Entity,iMacros,Selenium,WebAutomate\n";
-    document.querySelectorAll('#countBody tr').forEach(tr => {
-        csv += `${tr.dataset.ent},${tr.querySelector('[data-col="imacros"]').value},${tr.querySelector('[data-col="selenium"]').value},${tr.querySelector('[data-col="webautomate"]').value}\n`;
-    });
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `ECM_Tracking_${date}.csv`;
-    link.click();
+async function v2_saveData(){
+    if(!G_isAdmin)return;
+    try{ await fetch(API_Req_URL,{method:'POST',body:JSON.stringify(v2_appData)}); }
+    catch(e){ console.error("Save Error:",e); }
 }
 
-
-// ================================================================
-//  MODULE 2: REQUEST IDs (ProgressSeedsByReqID)
-// ================================================================
-const API_Req_URL = "https://script.google.com/macros/s/AKfycbxn6OY4mgdIQeRw8v2vyCBjlvTi80qOsZSEtSL8bbAM0JWLtNw4r9DsIxJTirXMcB0/exec";
-let appDataV2 = { weeks: [], rows: [] };
-let editingIdV2 = null;
-
-function formatMMDDYYYY(dStr) {
-    if (!dStr) return "";
-    if (dStr.includes('T')) dStr = dStr.split('T')[0];
-    const [y, m, d] = dStr.split('-');
-    return `${m}/${d}/${y}`;
-}
-
-async function loadDataV2() {
-    try {
-        const res = await fetch(API_Req_URL);
-        const data = await res.json();
-        if (data) appDataV2 = data;
-        monitorStaleStatus();
-        renderTableV2();
-        renderWeekManager();
-    } catch (e) { console.error("Sync Error:", e); }
-}
-
-async function saveDataV2() {
-    if (unifiedRole !== 'admin') return;
-    try {
-        await fetch(API_Req_URL, { method: 'POST', body: JSON.stringify(appDataV2) });
-    } catch (e) { console.error("Save Error:", e); }
-}
-
-function monitorStaleStatus() {
-    const today = new Date();
-    appDataV2.rows.forEach(row => {
-        let latestStr = String(row.date);
-        appDataV2.weeks.forEach(w => { if (row.weeklyValues[w]) latestStr = String(w); });
-        const [m, d, y] = latestStr.split('/');
-        const lastCheck = new Date(y, m - 1, d);
-        const diffDays = Math.ceil((today - lastCheck) / (1000 * 60 * 60 * 24));
-        if (diffDays >= 8) { row.isChecked = "No"; row.isStale = true; }
-        else { row.isStale = false; }
+function v2_monitorStale(){
+    const today=new Date();
+    v2_appData.rows.forEach(row=>{
+        let latest=String(row.date);
+        v2_appData.weeks.forEach(w=>{ if(row.weeklyValues[w]) latest=String(w); });
+        const [m,d,y]=latest.split('/');
+        const diff=Math.ceil((today-new Date(y,m-1,d))/86400000);
+        if(diff>=8){row.isChecked="No";row.isStale=true;}else{row.isStale=false;}
     });
 }
 
-function getTrend(cur, prev) {
-    if (!cur || !prev || prev == 0) return "";
-    const diff = ((cur - prev) / prev) * 100;
-    return `<span class="block text-[9px] font-black ${diff >= 0 ? 'text-green-500' : 'text-red-500'}">${diff >= 0 ? '+' : ''}${diff.toFixed(1)}%</span>`;
+function v2_getTrend(cur,prev){
+    if(!cur||!prev||prev==0)return"";
+    const d=((cur-prev)/prev)*100;
+    return `<span class="block text-[9px] font-black" style="color:${d>=0?'var(--green)':'var(--red)'}">${d>=0?'+':''}${d.toFixed(1)}%</span>`;
 }
 
-function renderTableV2() {
-    const head = document.getElementById('headerRow');
-    const body = document.getElementById('tableBodyV2');
-    if (!head || !body) return;
-    const q = document.getElementById('searchInput').value.toLowerCase();
-    const searchTerms = q.split(',').map(t => t.trim()).filter(t => t !== "");
+function v2_renderTable(){
+    const head=document.getElementById('v2_headerRow'), body=document.getElementById('v2_tableBody');
+    const q=(document.getElementById('v2_searchInput').value||'').toLowerCase();
+    const terms=q.split(',').map(t=>t.trim()).filter(t=>t!=="");
 
-    // Build Headers
-    let headHtml = `<th class="p-4 fixed-col fixed-col-header col-id">Req ID</th>
-        <th class="p-4 fixed-col fixed-col-header col-prov">Provider</th>
-        <th class="p-4 fixed-col fixed-col-header col-target text-center">Target</th>
-        <th class="p-4 fixed-col fixed-col-header col-entry">Entry</th>
-        <th class="p-4 fixed-col fixed-col-header col-kept text-center">Kept After</th>
-        <th class="p-4 fixed-col fixed-col-header col-sess">Session</th>
-        <th class="p-4 fixed-col fixed-col-header col-check">Checked</th>`;
-    appDataV2.weeks.forEach(w => headHtml += `<th class="p-4 text-center border-l border-slate-800">${String(w)}</th>`);
-    if (unifiedRole === 'admin') {
-        headHtml += `<th class="p-4 fixed-col fixed-col-header col-action text-right">Actions</th>`;
-    }
-    head.innerHTML = headHtml;
+    let hh=`<th class="px-4 py-3 fx fx-hd c-id">Req ID</th>
+        <th class="px-4 py-3 fx fx-hd c-pv">Provider</th>
+        <th class="px-4 py-3 fx fx-hd c-tg text-center">Target</th>
+        <th class="px-4 py-3 fx fx-hd c-en">Entry</th>
+        <th class="px-4 py-3 fx fx-hd c-kp text-center">Kept After</th>
+        <th class="px-4 py-3 fx fx-hd c-ss">Session</th>
+        <th class="px-4 py-3 fx fx-hd c-ck">Checked</th>`;
+    v2_appData.weeks.forEach(w=>hh+=`<th class="px-4 py-3 text-center border-l" style="border-color:var(--border);">${String(w)}</th>`);
+    if(G_isAdmin) hh+=`<th class="px-4 py-3 fx fx-hd c-ac text-right">Actions</th>`;
+    head.innerHTML=hh;
 
-    // Build rows
-    const filtered = appDataV2.rows.filter(r => {
-        if (searchTerms.length === 0) return true;
-        return searchTerms.some(term =>
-            r.reqId.toString().toLowerCase().includes(term) ||
-            r.provider.toLowerCase().includes(term)
-        );
+    const filtered=v2_appData.rows.filter(r=>{
+        if(terms.length===0)return true;
+        return terms.some(t=>r.reqId.toString().toLowerCase().includes(t)||r.provider.toLowerCase().includes(t));
     });
 
-    body.innerHTML = filtered.map(row => {
-        const isEditing = (editingIdV2 === row.dbId);
-        let prevVal = row.firstLogin;
+    const frag=document.createDocumentFragment();
+    filtered.forEach(row=>{
+        const editing=(v2_editingId===row.dbId);
+        let prevVal=row.firstLogin;
+        const tr=document.createElement('tr');
+        tr.className=row.isStale?'stale-row':'';
 
-        let rowHtml = `<tr class="${row.isStale ? 'stale-row' : ''}">
-            <td class="p-4 fixed-col col-id font-bold ${row.isStale ? 'stale-text' : 'text-indigo-400'}">${row.reqId}</td>
-            <td class="p-4 fixed-col col-prov">${row.provider}</td>
-            <td class="p-4 fixed-col col-target text-center">${row.countRequested}</td>
-            <td class="p-4 fixed-col col-entry text-slate-500">${String(row.date)}</td>
-            <td class="p-4 fixed-col col-kept text-center font-bold">${row.firstLogin}</td>
-            <td class="p-4 fixed-col col-sess">
-                <select onchange="updateSess(${row.dbId}, this.value)" ${(unifiedRole === 'viewer' || !isEditing) ? 'disabled' : ''} class="bg-transparent outline-none cursor-pointer text-white">
-                    <option value="Connect" ${row.sessionType === 'Connect' ? 'selected' : ''}>Connect</option>
-                    <option value="Reporting" ${row.sessionType === 'Reporting' ? 'selected' : ''}>Reporting</option>
+        let inner=`<td class="px-4 py-3.5 fx c-id font-bold mono text-xs ${row.isStale?'stale-txt':'text-indigo-400'}">${row.reqId}</td>
+            <td class="px-4 py-3.5 fx c-pv text-xs" style="color:var(--text-pri);">${row.provider}</td>
+            <td class="px-4 py-3.5 fx c-tg text-center mono text-xs" style="color:var(--text-pri);">${row.countRequested}</td>
+            <td class="px-4 py-3.5 fx c-en text-xs mono" style="color:var(--text-mute);">${String(row.date)}</td>
+            <td class="px-4 py-3.5 fx c-kp text-center font-bold mono text-xs" style="color:var(--text-pri);">${row.firstLogin}</td>
+            <td class="px-4 py-3.5 fx c-ss">
+                <select onchange="v2_updateSess(${row.dbId}, this.value)" ${(!G_isAdmin||!editing)?'disabled':''} class="bg-transparent outline-none cursor-pointer text-xs" style="color:var(--text-pri);">
+                    <option value="Connect"   ${row.sessionType==='Connect'  ?'selected':''}>Connect</option>
+                    <option value="Reporting" ${row.sessionType==='Reporting'?'selected':''}>Reporting</option>
                 </select>
             </td>
-            <td class="p-4 fixed-col col-check font-black ${row.isChecked === 'No' ? 'text-red-500' : 'text-green-500'}">${row.isChecked}</td>
-            ${appDataV2.weeks.map(w => {
-                const curVal = row.weeklyValues[w];
-                const cell = `<td class="p-4 border-l border-slate-800/30 text-center">
-                    <input type="number" class="bg-slate-800/50 rounded w-16 text-center text-white" value="${curVal || ''}" ${(unifiedRole === 'viewer' || !isEditing) ? 'disabled' : ''} onchange="updateWeeklyVal(${row.dbId}, '${w}', this.value)">
-                    ${getTrend(curVal, prevVal)}
-                </td>`;
-                if (curVal) prevVal = curVal;
-                return cell;
-            }).join('')}`;
+            <td class="px-4 py-3.5 fx c-ck font-black text-xs" style="color:${row.isChecked==='No'?'var(--red)':'var(--green)'};">${row.isChecked}</td>`;
 
-        if (unifiedRole === 'admin') {
-            rowHtml += `<td class="p-4 fixed-col col-action text-right">
-                ${!isEditing
-                    ? `<button onclick="editingIdV2=${row.dbId}; renderTableV2()" class="text-indigo-400 mx-2"><i class="fas fa-edit"></i></button>`
-                    : `<button onclick="editingIdV2=null; saveDataV2(); renderTableV2()" class="text-green-400 mx-2"><i class="fas fa-save"></i></button>`}
-                <button onclick="deleteRowV2(${row.dbId})" class="text-red-500"><i class="fas fa-trash"></i></button>
+        v2_appData.weeks.forEach(w=>{
+            const curVal=row.weeklyValues[w];
+            inner+=`<td class="px-4 py-3.5 border-l text-center" style="border-color:var(--border);">
+                <input type="number" class="rounded w-14 text-center mono text-xs" value="${curVal||''}" ${(!G_isAdmin||!editing)?'disabled':''}
+                    onchange="v2_updateWeeklyVal(${row.dbId},'${w}',this.value)"
+                    style="background:rgba(15,23,42,.4);color:var(--text-pri);border:none;outline:none;">
+                ${v2_getTrend(curVal,prevVal)}
+            </td>`;
+            if(curVal) prevVal=curVal;
+        });
+
+        if(G_isAdmin){
+            inner+=`<td class="px-4 py-3.5 fx c-ac text-right" style="background:var(--bg-panel);">
+                ${!editing
+                    ?`<button onclick="v2_editingId=${row.dbId};v2_renderTable()" class="text-indigo-400 mx-1.5 hover:opacity-70"><i class="fas fa-edit text-xs"></i></button>`
+                    :`<button onclick="v2_editingId=null;v2_saveData();v2_renderTable()" class="text-green-400 mx-1.5 hover:opacity-70"><i class="fas fa-save text-xs"></i></button>`}
+                <button onclick="v2_deleteRow(${row.dbId})" class="text-red-500 hover:opacity-70"><i class="fas fa-trash text-xs"></i></button>
             </td>`;
         }
-
-        rowHtml += `</tr>`;
-        return rowHtml;
-    }).join('');
+        tr.innerHTML=inner;
+        frag.appendChild(tr);
+    });
+    body.innerHTML=''; body.appendChild(frag);
 }
 
-function downloadCSVReqId() {
-    let csv = [];
-    const rows = document.querySelectorAll("#reqid-table tr");
-    rows.forEach(row => {
-        let cols = Array.from(row.querySelectorAll("th, td")).map(c => c.innerText.replace(/(\r\n|\n|\r)/gm, " ").trim());
+function v2_downloadCSV(){
+    let csv=[];
+    document.querySelectorAll("#v2_mainTable tr").forEach(row=>{
+        let cols=Array.from(row.querySelectorAll("th,td")).map(c=>c.innerText.replace(/(\r\n|\n|\r)/gm," ").trim());
         csv.push(cols.join(","));
     });
-    const blob = new Blob([csv.join("\n")], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.setAttribute("hidden", "");
-    a.setAttribute("href", url);
-    a.setAttribute("download", `Monitoring_Export_${new Date().toLocaleDateString()}.csv`);
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([csv.join("\n")],{type:"text/csv"}));
+    a.setAttribute('download',`Monitoring_Export_${new Date().toLocaleDateString()}.csv`);
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
-function updateSess(id, val) {
-    if (unifiedRole !== 'admin') return;
-    const r = appDataV2.rows.find(x => x.dbId === id);
-    if (r) r.sessionType = val;
-}
+function v2_updateSess(id,val){ if(!G_isAdmin)return; const r=v2_appData.rows.find(x=>x.dbId===id); if(r)r.sessionType=val; }
+function v2_updateWeeklyVal(id,w,v){ if(!G_isAdmin)return; const r=v2_appData.rows.find(x=>x.dbId===id); if(r){r.weeklyValues[w]=v;if(v)r.isChecked="Yes";} }
 
-function updateWeeklyVal(id, w, v) {
-    if (unifiedRole !== 'admin') return;
-    const r = appDataV2.rows.find(x => x.dbId === id);
-    if (r) { r.weeklyValues[w] = v; if (v) r.isChecked = "Yes"; }
-}
-
-function addNewRow() {
-    if (unifiedRole !== 'admin') return;
-    const dInput = document.getElementById('dateEntered').value;
-    if (!dInput) return alert("Select Entry Date");
-    appDataV2.rows.push({
-        dbId: Date.now(),
-        reqId: document.getElementById('reqId').value,
-        provider: document.getElementById('provider').value,
-        countRequested: document.getElementById('countRequested').value,
-        date: formatMMDDYYYY(dInput),
-        firstLogin: document.getElementById('firstLogin').value,
-        sessionType: document.getElementById('sessionType').value,
-        isChecked: 'No',
-        weeklyValues: {}
+function v2_addNewRow(){
+    if(!G_isAdmin)return;
+    const di=document.getElementById('v2_dateEntered').value;
+    if(!di)return alert("Select Entry Date");
+    v2_appData.rows.push({
+        dbId:Date.now(),
+        reqId:document.getElementById('v2_reqId').value,
+        provider:document.getElementById('v2_provider').value,
+        countRequested:document.getElementById('v2_countRequested').value,
+        date:v2_formatDate(di),
+        firstLogin:document.getElementById('v2_firstLogin').value,
+        sessionType:document.getElementById('v2_sessionType').value,
+        isChecked:'No', weeklyValues:{}
     });
-    saveDataV2();
-    renderTableV2();
+    v2_saveData(); v2_renderTable();
 }
 
-function addNewWeek() {
-    if (unifiedRole !== 'admin') return;
-    const dStr = document.getElementById('weekSingleDate').value;
-    if (!dStr) return;
-    const newLabel = formatMMDDYYYY(dStr);
-    if (!appDataV2.weeks.includes(newLabel)) {
-        appDataV2.weeks.push(newLabel);
-        saveDataV2();
-        loadDataV2();
-    }
+function v2_addNewWeek(){
+    if(!G_isAdmin)return;
+    const s=document.getElementById('v2_weekSingleDate').value; if(!s)return;
+    const lbl=v2_formatDate(s);
+    if(!v2_appData.weeks.includes(lbl)){v2_appData.weeks.push(lbl);v2_saveData();v2_loadData();}
 }
 
-function deleteRowV2(id) {
-    if (unifiedRole !== 'admin') return;
-    if (confirm("Delete?")) {
-        appDataV2.rows = appDataV2.rows.filter(x => x.dbId !== id);
-        saveDataV2();
-        renderTableV2();
-    }
-}
+function v2_deleteRow(id){ if(!G_isAdmin)return; if(confirm("Delete this row?")){ v2_appData.rows=v2_appData.rows.filter(x=>x.dbId!==id); v2_saveData(); v2_renderTable(); } }
 
-function renderWeekManager() {
-    const list = document.getElementById('weekManageList');
-    if (!list) return;
-    list.innerHTML = appDataV2.weeks.map(w => {
-        let html = `<div class="flex justify-between bg-slate-900 p-2 rounded text-[10px] font-bold text-white">
-            <span>${w}</span>`;
-        if (unifiedRole === 'admin') {
-            html += `<i class="fas fa-times text-red-500 cursor-pointer" onclick="deleteWeekColumn('${w}')"></i>`;
-        }
-        html += `</div>`;
-        return html;
-    }).join('');
-}
-
-function deleteWeekColumn(w) {
-    if (unifiedRole !== 'admin') return;
-    if (confirm("Delete column?")) {
-        appDataV2.weeks = appDataV2.weeks.filter(x => x !== w);
-        saveDataV2();
-        renderTableV2();
-        renderWeekManager();
-    }
-}
-
-// Auto-refresh ReqID every 60s
-setInterval(() => { if (unifiedRole) loadDataV2(); }, 60000);
-
-
-// ================================================================
-//  MODULE 3: SEEDS (ProgressSeedsByProfileListes)
-// ================================================================
-const API_SEEDS_URL = 'https://script.google.com/macros/s/AKfycbxJ8jHNqBVUS6pybA4B_3Q0Z9JRizYlqvUtoQfY5cxBCNk1krKId3Ldz-Dwxno2Q1g/exec';
-let rawSeedsData = [];
-let seedsHeaders = [];
-let seedsDB = { _entities: {}, _history: [] };
-let currentSeedsFile = "";
-
-const STATUS_KEYWORDS = [
-    "Activated", "Provide Phone Number", "Captcha Verification", "Captcha Text",
-    "Unusual Activity", "Account Not Belong You", "Wrong Browser", "Not Connected",
-    "Confirm Phone Recovery", "Verify You", "Wrong Recovery", "Account Disabled",
-    "Account Deleted", "Wrong Auth Key", "Connected", "Wrong Password",
-    "Someone Trying Access", "Wrong Email", "Blocked", "Another Device",
-    "Security Question", "Account Restricted", "New", "Closed"
-];
-
-async function loadFromCloudSeeds() {
-    setSeedsStatus("Syncing...");
-    try {
-        const res = await fetch(API_SEEDS_URL);
-        seedsDB = await res.json();
-        updateEntityDropdowns();
-        renderSeedsDbTable();
-        renderSeedsHistoryTable();
-        setSeedsStatus("Connected");
-    } catch (e) { setSeedsStatus("Sync Error"); }
-}
-
-function updateEntityDropdowns() {
-    const ents = Object.keys(seedsDB._entities);
-    const html = '<option value="">Select Entity...</option>' + ents.map(e => `<option value="${e}">${e}</option>`).join('');
-    document.getElementById('entitySelector').innerHTML = html;
-    document.getElementById('mgmtEntitySelect').innerHTML = html;
-    document.getElementById('historyEntityFilter').innerHTML = '<option value="">Filter by Entity...</option>' + ents.map(e => `<option value="${e}">${e}</option>`).join('');
-}
-
-document.getElementById('csvFile').addEventListener('change', function (e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    currentSeedsFile = file.name;
-    Papa.parse(file, {
-        header: true, skipEmptyLines: true, delimiter: ";",
-        complete: function (results) {
-            if (results.data.length === 0) return alert("Empty CSV");
-            seedsHeaders = Object.keys(results.data[0]);
-            rawSeedsData = results.data.map(row => {
-                const logText = (row.log || row.LOG || row.Log || "");
-                let detected = [];
-                STATUS_KEYWORDS.forEach(kw => {
-                    if (logText.toLowerCase().includes(kw.toLowerCase())) detected.push(kw);
-                });
-                if (detected.length === 0) detected.push("Others");
-                return { ...row, _extractedStatuses: detected };
-            });
-            updateSeedsDashboard(rawSeedsData);
-            renderSeedsTable(rawSeedsData);
-            populateSeedsStatusFilter(rawSeedsData);
-            document.getElementById('compareBtn').classList.remove('hidden');
-        }
-    });
-});
-
-function clearSeedsUI() {
-    rawSeedsData = [];
-    document.getElementById('statTotal').innerText = "0";
-    document.getElementById('statSuccess').innerText = "0%";
-    document.getElementById('counterGrid').innerHTML = "";
-    document.getElementById('tableBodySeeds').innerHTML = "";
-    document.getElementById('compareBtn').classList.add('hidden');
-    document.getElementById('comparisonSection').classList.add('hidden');
-    document.getElementById('csvFile').value = "";
-}
-
-function updateSeedsDashboard(data) {
-    const total = data.length;
-    const active = data.filter(r => r._extractedStatuses.some(s => s === "Activated" || s === "Connected")).length;
-    document.getElementById('statTotal').innerText = total.toLocaleString();
-    document.getElementById('statSuccess').innerText = (total > 0 ? (active / total * 100).toFixed(1) : 0) + "%";
-    const counts = {};
-    data.forEach(row => row._extractedStatuses.forEach(s => counts[s] = (counts[s] || 0) + 1));
-    document.getElementById('counterGrid').innerHTML = Object.entries(counts).map(([status, count]) => `
-        <div class="flex justify-between border-b border-slate-800/30 pb-1">
-            <span class="text-slate-500 font-bold uppercase text-[9px]">${status}</span>
-            <span class="font-mono font-black ${status === 'Activated' || status === 'Connected' ? 'text-green-400' : 'text-slate-300'}">${count}</span>
+function v2_renderWeekManager(){
+    document.getElementById('v2_weekManageList').innerHTML=v2_appData.weeks.map(w=>`
+        <div class="flex justify-between items-center px-3 py-1.5 rounded-lg text-[10px] font-bold" style="background:var(--bg-input);color:var(--text-pri);">
+            <span class="mono">${w}</span>
+            ${G_isAdmin?`<i class="fas fa-times text-red-500 cursor-pointer hover:opacity-70" onclick="v2_deleteWeekCol('${w}')"></i>`:''}
         </div>`).join('');
 }
 
-function renderSeedsTable(data) {
-    const thead = document.getElementById('tableHead');
-    const tbody = document.getElementById('tableBodySeeds');
-    thead.innerHTML = `<tr class="bg-slate-900 text-slate-500 uppercase text-[10px] font-black">
-        <th class="p-4 text-green-500">Status</th>
-        ${seedsHeaders.map(h => `<th class="p-4">${h}</th>`).join('')}
+function v2_deleteWeekCol(w){ if(!G_isAdmin)return; if(confirm("Delete column?")){ v2_appData.weeks=v2_appData.weeks.filter(x=>x!==w); v2_saveData(); v2_renderTable(); v2_renderWeekManager(); } }
+
+setInterval(()=>{ if(G_userRole) v2_loadData(); },60000);
+
+
+// ════════════════════════════════════════════════════════════════════
+// VIEW 3 — Tracking Seeds
+// ════════════════════════════════════════════════════════════════════
+const API_SEEDS_URL='https://script.google.com/macros/s/AKfycbxJ8jHNqBVUS6pybA4B_3Q0Z9JRizYlqvUtoQfY5cxBCNk1krKId3Ldz-Dwxno2Q1g/exec';
+let v3_rawData=[], v3_headers=[], v3_seedsDB={_entities:{},_history:[]}, v3_curFile="";
+
+const V3_STATUS_KW=["Activated","Provide Phone Number","Captcha Verification","Captcha Text","Unusual Activity","Account Not Belong You","Wrong Browser","Not Connected","Confirm Phone Recovery","Verify You","Wrong Recovery","Account Disabled","Account Deleted","Wrong Auth Key","Connected","Wrong Password","Someone Trying Access","Wrong Email","Blocked","Another Device","Security Question","Account Restricted","New","Closed"];
+
+async function v3_loadFromCloud(){
+    v3_setStatus("Syncing…"); setGlobalSync("Syncing…",'loading');
+    try{
+        const r=await fetch(API_SEEDS_URL);
+        v3_seedsDB=await r.json();
+        v3_updateDropdowns(); v3_renderDbTable(); v3_renderHistoryTable();
+        v3_setStatus("Connected"); setGlobalSync("Online",'online');
+    } catch(e){ v3_setStatus("Sync Error"); setGlobalSync("Offline",'error'); }
+}
+
+function v3_updateDropdowns(){
+    const ents=Object.keys(v3_seedsDB._entities);
+    const html='<option value="">Select Entity...</option>'+ents.map(e=>`<option value="${e}">${e}</option>`).join('');
+    ['v3_entitySelector','v3_mgmtEntitySelect','v3_historyEntityFilter'].forEach(id=>document.getElementById(id).innerHTML=html);
+}
+
+// ── FILE UPLOAD — optimised with chunked rendering ──────────────────
+document.getElementById('v3_csvFile').addEventListener('change', function(e){
+    const file=e.target.files[0]; if(!file)return;
+    v3_curFile=file.name;
+
+    // show upload hint hidden, show stats area
+    document.getElementById('v3_uploadHint').classList.add('hidden');
+    document.getElementById('v3_statsArea').classList.remove('hidden');
+
+    // Show progress bar
+    const loadBar=document.getElementById('v3_loadBar');
+    const loadFill=document.getElementById('v3_loadFill');
+    const loadPct=document.getElementById('v3_loadPct');
+    loadBar.classList.remove('hidden');
+    loadFill.style.width='0%'; loadPct.textContent='0%';
+
+    // Clear previous
+    v3_rawData=[]; v3_headers=[];
+    document.getElementById('v3_tableBodySeeds').innerHTML='';
+    document.getElementById('v3_tableHead').innerHTML='';
+
+    // Chunked parse for performance
+    let rowsProcessed=0;
+    const CHUNK=500;
+
+    Papa.parse(file, {
+        header:true, skipEmptyLines:true, delimiter:";",
+        chunk: function(results){
+            const chunk=results.data;
+            if(v3_headers.length===0 && chunk.length>0) v3_headers=Object.keys(chunk[0]);
+
+            chunk.forEach(row=>{
+                const logText=(row.log||row.LOG||row.Log||"");
+                let detected=[];
+                V3_STATUS_KW.forEach(kw=>{ if(logText.toLowerCase().includes(kw.toLowerCase())) detected.push(kw); });
+                if(detected.length===0) detected.push("Others");
+                v3_rawData.push({...row, _extractedStatuses:detected});
+            });
+            rowsProcessed+=chunk.length;
+        },
+        complete: function(){
+            if(v3_rawData.length===0){ alert("Empty CSV"); loadBar.classList.add('hidden'); return; }
+
+            // Final progress
+            loadFill.style.width='100%'; loadPct.textContent='100%';
+
+            // Use requestAnimationFrame to keep UI responsive
+            requestAnimationFrame(()=>{
+                v3_updateDashboard(v3_rawData);
+                v3_populateStatusFilter(v3_rawData);
+                document.getElementById('v3_compareBtn').style.display='';
+                document.getElementById('v3_compareBtn').classList.remove('hidden');
+
+                // Render table in chunks to avoid freezing
+                v3_renderSeedsTableVirtualized(v3_rawData);
+
+                setTimeout(()=>loadBar.classList.add('hidden'), 400);
+            });
+        },
+        error: function(err){ alert("Parse error: "+err.message); loadBar.classList.add('hidden'); }
+    });
+});
+
+// Virtualized table render — only renders RENDER_LIMIT rows at once, debounced filter
+const RENDER_LIMIT = 2000;
+
+function v3_renderSeedsTableVirtualized(data){
+    const thead=document.getElementById('v3_tableHead');
+    const tbody=document.getElementById('v3_tableBodySeeds');
+
+    thead.innerHTML=`<tr class="text-[10px] font-black uppercase" style="background:var(--bg-panel);border-bottom:1px solid var(--border);">
+        <th class="px-4 py-3" style="color:var(--green);">Status</th>
+        ${v3_headers.map(h=>`<th class="px-4 py-3" style="color:var(--text-mute);">${h}</th>`).join('')}
     </tr>`;
-    tbody.innerHTML = data.map(row => {
-        const statusHtml = row._extractedStatuses.map(s => `<span class="status-pill ${getSeedsStatusClass(s)}">${s}</span>`).join('');
-        return `<tr class="hover:bg-slate-800/30 border-b border-slate-800/50">
-            <td class="p-4">${statusHtml}</td>
-            ${seedsHeaders.map(h => `<td class="p-4">${row[h] || ''}</td>`).join('')}
-        </tr>`;
-    }).join('');
-}
 
-function getSeedsStatusClass(s) {
-    if (s === "Activated" || s === "Connected") return 'bg-green-500/10 text-green-500 border-green-500/50';
-    if (s === "Closed" || s.includes("Wrong") || s.includes("Disabled")) return 'bg-red-500/10 text-red-400 border-red-500/50';
-    return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/50';
-}
+    // Update row count label
+    document.getElementById('v3_rowCount').textContent=`${data.length.toLocaleString()} rows`;
 
-function filterSeedsTable() {
-    const q = document.getElementById('idSearch').value.toLowerCase();
-    const sf = document.getElementById('statusFilter').value;
-    const filtered = rawSeedsData.filter(row => {
-        const mq = Object.values(row).some(v => String(v).toLowerCase().includes(q));
-        const ms = sf === "All" || row._extractedStatuses.includes(sf);
-        return mq && ms;
-    });
-    renderSeedsTable(filtered);
-}
+    // Render in a single DocumentFragment
+    const frag=document.createDocumentFragment();
+    const limit=Math.min(data.length, RENDER_LIMIT);
+    for(let i=0;i<limit;i++){
+        const row=data[i];
+        const tr=document.createElement('tr');
+        tr.style.borderBottom='1px solid var(--border)';
+        tr.innerHTML=`<td class="px-4 py-3">${row._extractedStatuses.map(s=>`<span class="spill ${v3_getStatusClass(s)}">${s}</span>`).join('')}</td>
+            ${v3_headers.map(h=>`<td class="px-4 py-3 text-xs mono" style="color:var(--text-pri);">${row[h]||''}</td>`).join('')}`;
+        frag.appendChild(tr);
+    }
 
-function populateSeedsStatusFilter(data) {
-    const allFound = [];
-    data.forEach(r => allFound.push(...r._extractedStatuses));
-    const unique = [...new Set(allFound)].sort();
-    document.getElementById('statusFilter').innerHTML =
-        '<option value="All">All Statuses</option>' + unique.map(s => `<option value="${s}">${s}</option>`).join('');
-}
+    tbody.innerHTML='';
+    tbody.appendChild(frag);
 
-function runComparison() {
-    const ent = document.getElementById('entitySelector').value;
-    if (!ent) return alert("Select Entity.");
-    const entityData = seedsDB._entities[ent];
-    const compBody = document.getElementById('comparisonBody');
-    compBody.innerHTML = '';
-    document.getElementById('comparisonSection').classList.remove('hidden');
-
-    Object.entries(entityData).forEach(([dbSessionName, dbTarget]) => {
-        const sessionRows = rawSeedsData.filter(row => {
-            const fullSessionName = (row.session_name || row.SESSION_NAME || "").trim();
-            const baseNameInFile = fullSessionName.split('(')[0].trim();
-            return baseNameInFile === dbSessionName.trim();
-        });
-        const actualActive = sessionRows.filter(r => r._extractedStatuses.some(s => s === 'Activated' || s === 'Connected')).length;
-        const totalInSession = sessionRows.length;
-        const loss = totalInSession - actualActive;
-        let finalPercent = totalInSession > 0 ? ((actualActive / totalInSession) * 100).toFixed(1) : 0;
-
-        compBody.innerHTML += `<tr class="hover:bg-slate-800/40">
-            <td class="p-4 font-black text-slate-200 text-xs">${dbSessionName}</td>
-            <td class="p-4 text-center font-mono text-slate-500">${dbTarget}</td>
-            <td class="p-4 text-center font-mono text-green-400 bg-green-500/5 text-lg font-black">${actualActive}</td>
-            <td class="p-4 text-center font-mono text-red-500 text-lg font-bold">${loss}</td>
-            <td class="p-4 text-right"><span class="text-xl font-black ${finalPercent >= 80 ? 'text-green-400' : 'text-red-500'}">${finalPercent}%</span></td>
-        </tr>`;
-    });
-}
-
-async function saveComparisonResult() {
-    const ent = document.getElementById('entitySelector').value;
-    const rows = document.querySelectorAll('#comparisonBody tr');
-    if (rows.length === 0) return;
-    const idMatch = currentSeedsFile.match(/\d+/);
-    const procID = idMatch ? idMatch[0] : "UNK-" + Math.floor(Math.random() * 999);
-    const details = Array.from(rows).map(r => {
-        const c = r.querySelectorAll('td');
-        return { name: c[0].innerText, target: c[1].innerText, active: c[2].innerText, loss: c[3].innerText };
-    });
-    const dateObj = new Date();
-    const formattedDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
-    const newSave = { date: formattedDate, processID: procID, entity: ent, details };
-    seedsDB._history.unshift(newSave);
-    renderSeedsHistoryTable();
-    await fetch(API_SEEDS_URL, {
-        method: 'POST', mode: 'no-cors',
-        body: JSON.stringify({ action: "save_history", payload: newSave })
-    });
-}
-
-function renderSeedsHistoryTable() {
-    const tbody = document.getElementById('historyTableBody');
-    const dateFInput = document.getElementById('historyDateFilter').value;
-    const entF = document.getElementById('historyEntityFilter').value;
-    tbody.innerHTML = '';
-    if (!entF) return;
-    const sessionsInEntity = seedsDB._entities[entF] || {};
-    Object.entries(sessionsInEntity).forEach(([sessionName, targetCount]) => {
-        let totalActive = 0;
-        let totalLoss = 0;
-        let sessionHistoryBreakdown = [];
-        seedsDB._history.forEach(record => {
-            const matchesEntity = record.entity === entF;
-            let matchesDate = true;
-            if (dateFInput) {
-                const formattedSelectedDate = dateFInput.split('-').reverse().join('/');
-                matchesDate = record.date === formattedSelectedDate;
-            }
-            if (matchesEntity && matchesDate) {
-                const sessData = record.details.find(d => d.name === sessionName);
-                if (sessData) {
-                    const act = parseInt(sessData.active);
-                    const lss = parseInt(sessData.loss);
-                    totalActive += act;
-                    totalLoss += lss;
-                    sessionHistoryBreakdown.push({ date: record.date, id: record.processID, active: act, loss: lss });
-                }
-            }
-        });
-        tbody.innerHTML += `<tr class="hover:bg-slate-800/30">
-            <td class="p-4 font-black text-slate-200">${sessionName}</td>
-            <td class="p-4 text-center font-mono text-slate-400">${targetCount}</td>
-            <td class="p-4 text-center font-black text-green-400">${totalActive}</td>
-            <td class="p-4 text-center font-black text-red-500">${totalLoss}</td>
-            <td class="p-4 text-right">
-                <button onclick='showSessionBreakdown("${sessionName}", ${JSON.stringify(sessionHistoryBreakdown)})'
-                        class="text-indigo-400 text-[10px] font-bold hover:underline">
-                    ShowDetail
-                </button>
-            </td>
-        </tr>`;
-    });
-}
-
-function showSessionBreakdown(sessionName, history) {
-    const tbody = document.getElementById('detailTableBody');
-    document.getElementById('detailModalTitle').innerText = sessionName;
-    document.getElementById('detailModalSubtitle').innerText = `Process ID Results Summary`;
-    tbody.innerHTML = history.map(item => `
-        <tr class="hover:bg-slate-800/50">
-            <td class="p-4 text-slate-400 font-mono text-[11px]">${item.date}</td>
-            <td class="p-4 font-black text-indigo-400">#${item.id}</td>
-            <td class="p-4 text-center">
-                <div class="inline-flex items-center gap-2 bg-[#0b0f1a] px-3 py-1 rounded-lg border border-slate-800">
-                    <span class="text-[10px] text-slate-500 font-bold">Active file:</span>
-                    <span class="text-green-500 font-black">${item.active}</span>
-                    <span class="mx-1 text-slate-700">|</span>
-                    <span class="text-[10px] text-slate-500 font-bold">Blocked file (Loss):</span>
-                    <span class="text-red-500 font-black">-${item.loss}</span>
-                </div>
-            </td>
-        </tr>`).join('');
-    toggleModal('detailModal', true);
-}
-
-function addSessionData() {
-    let ent = document.getElementById('mgmtEntitySelect').value;
-    const newEntInput = document.getElementById('newEntityName').value.trim();
-    if (newEntInput) ent = newEntInput;
-    const ses = document.getElementById('newSession').value.trim();
-    const cnt = parseInt(document.getElementById('newCount').value);
-    if (!ent || !ses || isNaN(cnt)) return alert("Fill all fields");
-    if (!seedsDB._entities[ent]) seedsDB._entities[ent] = {};
-    seedsDB._entities[ent][ses] = cnt;
-    saveSettingsSeedsToCloud();
-    document.getElementById('newEntityName').value = "";
-    renderSeedsDbTable();
-}
-
-function renderSeedsDbTable() {
-    const ent = document.getElementById('mgmtEntitySelect').value;
-    const tbody = document.getElementById('dbTableBody');
-    tbody.innerHTML = '';
-    if (!ent || !seedsDB._entities[ent]) return;
-    Object.entries(seedsDB._entities[ent]).forEach(([session, count]) => {
-        tbody.innerHTML += `<tr>
-            <td class="p-4 font-mono text-white">${session}</td>
-            <td class="p-4 text-center font-black text-white">${count}</td>
-            <td class="p-4 text-right">
-                <button onclick="prepEditSession('${ent}', '${session}', ${count})" class="text-indigo-400 mr-3">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="deleteSession('${ent}', '${session}')" class="text-red-500">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>`;
-    });
-}
-
-function prepEditSession(ent, ses, cnt) {
-    document.getElementById('newSession').value = ses;
-    document.getElementById('newCount').value = cnt;
-}
-
-async function deleteSession(ent, ses) {
-    if (confirm("Delete?")) {
-        delete seedsDB._entities[ent][ses];
-        saveSettingsSeedsToCloud();
-        renderSeedsDbTable();
+    if(data.length>RENDER_LIMIT){
+        const note=document.createElement('tr');
+        note.innerHTML=`<td colspan="${v3_headers.length+1}" class="px-4 py-3 text-center text-xs font-bold" style="color:var(--text-mute);">
+            Showing ${RENDER_LIMIT.toLocaleString()} of ${data.length.toLocaleString()} rows. Use filters to narrow results.
+        </td>`;
+        tbody.appendChild(note);
     }
 }
 
-async function saveSettingsSeedsToCloud() {
-    setSeedsStatus("Syncing...");
-    await fetch(API_SEEDS_URL, {
-        method: 'POST', mode: 'no-cors',
-        body: JSON.stringify({ action: "save_settings", payload: seedsDB._entities })
+// Alias for legacy calls
+function v3_renderSeedsTable(data){ v3_renderSeedsTableVirtualized(data); }
+
+function v3_clearUI(){
+    v3_rawData=[]; v3_headers=[];
+    document.getElementById('v3_statTotal').textContent="0";
+    document.getElementById('v3_statSuccess').textContent="0%";
+    document.getElementById('v3_counterGrid').innerHTML="";
+    document.getElementById('v3_tableBodySeeds').innerHTML="";
+    document.getElementById('v3_compareBtn').classList.add('hidden');
+    document.getElementById('v3_comparisonSection').classList.add('hidden');
+    document.getElementById('v3_csvFile').value="";
+    document.getElementById('v3_statsArea').classList.add('hidden');
+    document.getElementById('v3_uploadHint').classList.remove('hidden');
+    document.getElementById('v3_rowCount').textContent="";
+}
+
+function v3_updateDashboard(data){
+    const total=data.length;
+    const active=data.filter(r=>r._extractedStatuses.some(s=>s==="Activated"||s==="Connected")).length;
+    document.getElementById('v3_statTotal').textContent=total.toLocaleString();
+    document.getElementById('v3_statSuccess').textContent=(total>0?(active/total*100).toFixed(1):0)+"%";
+    const counts={};
+    data.forEach(row=>row._extractedStatuses.forEach(s=>counts[s]=(counts[s]||0)+1));
+    document.getElementById('v3_counterGrid').innerHTML=Object.entries(counts).map(([s,c])=>`
+        <div class="flex justify-between pb-1 border-b" style="border-color:var(--border);">
+            <span class="text-[9px] font-bold uppercase" style="color:var(--text-mute);">${s}</span>
+            <span class="mono font-black text-[10px]" style="color:${s==='Activated'||s==='Connected'?'var(--green)':'var(--text-pri)'};">${c}</span>
+        </div>`).join('');
+}
+
+function v3_getStatusClass(s){
+    if(s==="Activated"||s==="Connected") return 'bg-green-500/10 text-green-500 border-green-500/50';
+    if(s==="Closed"||s.includes("Wrong")||s.includes("Disabled")) return 'bg-red-500/10 text-red-400 border-red-500/50';
+    return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/50';
+}
+
+let v3_filterDebounce=null;
+function v3_filterTable(){
+    clearTimeout(v3_filterDebounce);
+    v3_filterDebounce=setTimeout(()=>{
+        const q=document.getElementById('v3_idSearch').value.toLowerCase();
+        const sf=document.getElementById('v3_statusFilter').value;
+        const filtered=v3_rawData.filter(row=>{
+            const mq=!q||Object.values(row).some(v=>String(v).toLowerCase().includes(q));
+            const ms=sf==="All"||row._extractedStatuses.includes(sf);
+            return mq&&ms;
+        });
+        v3_renderSeedsTableVirtualized(filtered);
+    },200);
+}
+
+function v3_populateStatusFilter(data){
+    const all=[]; data.forEach(r=>all.push(...r._extractedStatuses));
+    const unique=[...new Set(all)].sort();
+    document.getElementById('v3_statusFilter').innerHTML='<option value="All">All Statuses</option>'+unique.map(s=>`<option value="${s}">${s}</option>`).join('');
+}
+
+// ── COMPARISON — dynamic session detection (no hardcoded limit) ──────
+function v3_runComparison(){
+    const ent=document.getElementById('v3_entitySelector').value;
+    if(!ent)return alert("Select an entity first.");
+    const entityData=v3_seedsDB._entities[ent];
+    if(!entityData)return alert("No data for this entity.");
+
+    const compBody=document.getElementById('v3_comparisonBody');
+    compBody.innerHTML='';
+    document.getElementById('v3_comparisonSection').classList.remove('hidden');
+
+    // Dynamically detect all sessions present in the CSV (no hardcoded count limit)
+    const sessionsInFile = new Set();
+    v3_rawData.forEach(row=>{
+        const fn=(row.session_name||row.SESSION_NAME||row.Session_Name||"").trim();
+        if(fn) sessionsInFile.add(fn.split('(')[0].trim());
     });
-    loadFromCloudSeeds();
-}
 
-function setSeedsStatus(text) {
-    document.getElementById('globalSyncStatus').innerText = text;
-}
+    const frag=document.createDocumentFragment();
+    Object.entries(entityData).forEach(([dbSession, dbTarget])=>{
+        const sessionRows=v3_rawData.filter(row=>{
+            const fn=(row.session_name||row.SESSION_NAME||row.Session_Name||"").trim();
+            const base=fn.split('(')[0].trim();
+            return base===dbSession.trim();
+        });
 
-function toggleModal(id, show) {
-    document.getElementById(id).classList.toggle('active', show);
-}
+        const actualActive=sessionRows.filter(r=>r._extractedStatuses.some(s=>s==='Activated'||s==='Connected')).length;
+        const totalInSession=sessionRows.length;
+        const loss=totalInSession-actualActive;
+        const pct=totalInSession>0?((actualActive/totalInSession)*100).toFixed(1):0;
 
-function copyTableToClipboard(tableId) {
-    const el = document.getElementById(tableId);
-    let body = "";
-    el.querySelectorAll('tr').forEach(tr => {
-        let row = [];
-        tr.querySelectorAll('th, td').forEach(td => row.push(td.innerText));
-        body += row.join("\t") + "\n";
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+            <td class="px-5 py-3.5 font-bold text-xs mono" style="color:var(--text-pri);">${dbSession}</td>
+            <td class="px-5 py-3.5 text-center mono text-xs" style="color:var(--text-mute);">${dbTarget}</td>
+            <td class="px-5 py-3.5 text-center font-black mono" style="color:var(--green);font-size:15px;">${actualActive}</td>
+            <td class="px-5 py-3.5 text-center font-bold mono text-sm" style="color:var(--red);">${loss}</td>
+            <td class="px-5 py-3.5 text-right"><span class="font-black mono text-base" style="color:${parseFloat(pct)>=80?'var(--green)':'var(--red)'};">${pct}%</span></td>`;
+        frag.appendChild(tr);
     });
-    navigator.clipboard.writeText(body).then(() => alert("Copied"));
+    compBody.appendChild(frag);
 }
 
-function downloadCSV(csv, filename) {
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-}
-
-function downloadTableAsCSV(tableId, title) {
-    let csv = [];
-    document.querySelectorAll(`#${tableId} tr`).forEach(tr => {
-        let row = [];
-        tr.querySelectorAll("td, th").forEach(col => row.push(col.innerText.replace(/,/g, "")));
-        csv.push(row.join(","));
+async function v3_saveComparisonResult(){
+    const ent=document.getElementById('v3_entitySelector').value;
+    const rows=document.querySelectorAll('#v3_comparisonBody tr');
+    if(rows.length===0)return;
+    const idMatch=v3_curFile.match(/\d+/);
+    const procID=idMatch?idMatch[0]:"UNK-"+Math.floor(Math.random()*999);
+    const details=Array.from(rows).map(r=>{
+        const c=r.querySelectorAll('td');
+        return{name:c[0].innerText,target:c[1].innerText,active:c[2].innerText,loss:c[3].innerText};
     });
-    downloadCSV(csv.join("\n"), title + ".csv");
+    const d=new Date();
+    const date=`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    const newSave={date,processID:procID,entity:ent,details};
+    v3_seedsDB._history.unshift(newSave);
+    v3_renderHistoryTable();
+    await fetch(API_SEEDS_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({action:"save_history",payload:newSave})});
 }
 
+function v3_renderHistoryTable(){
+    const tbody=document.getElementById('v3_historyTableBody');
+    const dateFIn=document.getElementById('v3_historyDateFilter').value;
+    const entF=document.getElementById('v3_historyEntityFilter').value;
+    tbody.innerHTML='';
+    if(!entF)return;
+    const sessInEnt=v3_seedsDB._entities[entF]||{};
+    const frag=document.createDocumentFragment();
+    Object.entries(sessInEnt).forEach(([sessionName,targetCount])=>{
+        let totalActive=0,totalLoss=0,breakdown=[];
+        v3_seedsDB._history.forEach(record=>{
+            const matchEnt=record.entity===entF;
+            let matchDate=true;
+            if(dateFIn){const fd=dateFIn.split('-').reverse().join('/');matchDate=record.date===fd;}
+            if(matchEnt&&matchDate){
+                const sd=record.details.find(d=>d.name===sessionName);
+                if(sd){const a=parseInt(sd.active),l=parseInt(sd.loss);totalActive+=a;totalLoss+=l;breakdown.push({date:record.date,id:record.processID,active:a,loss:l});}
+            }
+        });
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+            <td class="px-5 py-3.5 font-bold mono text-xs" style="color:var(--text-pri);">${sessionName}</td>
+            <td class="px-5 py-3.5 text-center mono text-xs" style="color:var(--text-mute);">${targetCount}</td>
+            <td class="px-5 py-3.5 text-center font-black mono" style="color:var(--green);">${totalActive}</td>
+            <td class="px-5 py-3.5 text-center font-black mono" style="color:var(--red);">${totalLoss}</td>
+            <td class="px-5 py-3.5 text-right">
+                <button onclick='v3_showBreakdown("${sessionName}",${JSON.stringify(breakdown)})'
+                    class="text-[10px] font-bold uppercase px-3 py-1 rounded-lg transition hover:opacity-80"
+                    style="color:var(--indigo);background:rgba(129,140,248,.08);border:1px solid rgba(129,140,248,.2);">Detail</button>
+            </td>`;
+        frag.appendChild(tr);
+    });
+    tbody.appendChild(frag);
+}
+
+function v3_showBreakdown(name,history){
+    document.getElementById('v3_detailModalTitle').textContent=name;
+    document.getElementById('v3_detailModalSubtitle').textContent="Process ID Results Summary";
+    const frag=document.createDocumentFragment();
+    history.forEach(item=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+            <td class="px-4 py-3.5 mono text-[11px]" style="color:var(--text-mute);">${item.date}</td>
+            <td class="px-4 py-3.5 font-black mono" style="color:var(--indigo);">#${item.id}</td>
+            <td class="px-4 py-3.5 text-center">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg border" style="background:var(--bg-surface);border-color:var(--border);">
+                    <span class="text-[10px] font-bold" style="color:var(--text-mute);">Active:</span>
+                    <span class="font-black mono" style="color:var(--green);">${item.active}</span>
+                    <span style="color:var(--border);">|</span>
+                    <span class="text-[10px] font-bold" style="color:var(--text-mute);">Loss:</span>
+                    <span class="font-black mono" style="color:var(--red);">-${item.loss}</span>
+                </div>
+            </td>`;
+        frag.appendChild(tr);
+    });
+    document.getElementById('v3_detailTableBody').innerHTML='';
+    document.getElementById('v3_detailTableBody').appendChild(frag);
+    toggleModal('v3_detailModal',true);
+}
+
+function v3_addSessionData(){
+    let ent=document.getElementById('v3_mgmtEntitySelect').value;
+    const newE=document.getElementById('v3_newEntityName').value.trim();
+    if(newE)ent=newE;
+    const ses=document.getElementById('v3_newSession').value.trim();
+    const cnt=parseInt(document.getElementById('v3_newCount').value);
+    if(!ent||!ses||isNaN(cnt))return alert("Fill all fields");
+    if(!v3_seedsDB._entities[ent])v3_seedsDB._entities[ent]={};
+    v3_seedsDB._entities[ent][ses]=cnt;
+    v3_saveSettings(); document.getElementById('v3_newEntityName').value=""; v3_renderDbTable();
+}
+
+function v3_renderDbTable(){
+    const ent=document.getElementById('v3_mgmtEntitySelect').value;
+    const tbody=document.getElementById('v3_dbTableBody');
+    tbody.innerHTML='';
+    if(!ent||!v3_seedsDB._entities[ent])return;
+    const frag=document.createDocumentFragment();
+    Object.entries(v3_seedsDB._entities[ent]).forEach(([session,count])=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+            <td class="px-4 py-3 mono text-xs" style="color:var(--text-pri);">${session}</td>
+            <td class="px-4 py-3 text-center font-black mono text-xs" style="color:var(--text-pri);">${count}</td>
+            <td class="px-4 py-3 text-right">
+                <button onclick="v3_prepEdit('${ent}','${session}',${count})" class="mr-3 hover:opacity-70" style="color:var(--indigo);"><i class="fas fa-edit text-xs"></i></button>
+                <button onclick="v3_deleteSession('${ent}','${session}')" class="hover:opacity-70" style="color:var(--red);"><i class="fas fa-trash text-xs"></i></button>
+            </td>`;
+        frag.appendChild(tr);
+    });
+    tbody.appendChild(frag);
+}
+
+function v3_prepEdit(ent,ses,cnt){ document.getElementById('v3_newSession').value=ses; document.getElementById('v3_newCount').value=cnt; }
+async function v3_deleteSession(ent,ses){ if(confirm("Delete this session?")){ delete v3_seedsDB._entities[ent][ses]; v3_saveSettings(); v3_renderDbTable(); } }
+async function v3_saveSettings(){ v3_setStatus("Syncing…"); await fetch(API_SEEDS_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({action:"save_settings",payload:v3_seedsDB._entities})}); v3_loadFromCloud(); }
+function v3_setStatus(text){ document.getElementById('globalSyncStatus').textContent=text; }
+
+function v3_copyTable(tableId){
+    const el=document.getElementById(tableId); let body="";
+    el.querySelectorAll('tr').forEach(tr=>{let row=[];tr.querySelectorAll('th,td').forEach(td=>row.push(td.innerText));body+=row.join("\t")+"\n";});
+    navigator.clipboard.writeText(body).then(()=>alert("Copied to clipboard"));
+}
+
+function v3_downloadTableCSV(tableId,title){
+    let csv=[];
+    document.querySelectorAll(`#${tableId} tr`).forEach(tr=>{
+        let row=[];tr.querySelectorAll("td,th").forEach(col=>row.push(col.innerText.replace(/,/g,"")));csv.push(row.join(","));
+    });
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv.join("\n")],{type:'text/csv'}));
+    a.download=title+".csv"; a.click();
+}
 </script>
 </body>
 </html>
